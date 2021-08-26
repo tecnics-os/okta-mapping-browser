@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { HashRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import { styled, useTheme } from '@material-ui/core/styles';
 import { createTheme } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
@@ -23,6 +23,8 @@ import Brightness7Icon from '@material-ui/icons/Brightness7';
 import { ThemeProvider } from '@emotion/react';
 import { Paper } from '@material-ui/core';
 import ReactFlow from 'react-flow-renderer';
+import Settings from './pages/settings';
+import Apps from './pages/apps';
 
 const drawerWidth = 60;
 
@@ -50,7 +52,7 @@ const Drawer = styled(MuiDrawer)(() => ({
   boxSizing: 'border-box',
 }));
 
-function MiniDrawer() {
+export default function App() {
   const [theme, setTheme] = useState(true);
   const icon = !theme ? <Brightness7Icon /> : <Brightness3Icon />;
   const light = {
@@ -67,112 +69,76 @@ function MiniDrawer() {
   const appliedTheme = createTheme(theme ? light : dark);
   return (
     <ThemeProvider theme={appliedTheme}>
-      <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <AppBar position="fixed">
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              sx={{
-                marginRight: '36px',
-              }}
-            >
-              {/* <img src="../assets/faviconOktaTools.png" alt="okta-tools" /> */}
-            </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} />
-            <IconButton
-              edge="end"
-              color="inherit"
-              aria-label="mode"
-              onClick={() => setTheme(!theme)}
-            >
-              {icon}
-            </IconButton>
-          </Toolbar>
-        </AppBar>
-        <Drawer variant="permanent">
-          <DrawerHeader></DrawerHeader>
-          <Divider />
-          <List>
-            <ListItem button>
-              <ListItemIcon sx={{ minWidth: 30, mb: 2 }}>
-                <BookmarksIcon fontSize="large" />
-              </ListItemIcon>
-              <ListItemText />
-            </ListItem>
+      <Router>
+        <Box sx={{ display: 'flex' }}>
+          <CssBaseline />
+          <AppBar position="fixed">
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                sx={{
+                  marginRight: '36px',
+                }}
+              >
+                {/* <img src="../assets/faviconOktaTools.png" alt="okta-tools" /> */}
+              </IconButton>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} />
+              <IconButton
+                edge="end"
+                color="inherit"
+                aria-label="mode"
+                onClick={() => setTheme(!theme)}
+              >
+                {icon}
+              </IconButton>
+            </Toolbar>
+          </AppBar>
+          <Drawer variant="permanent">
+            <DrawerHeader></DrawerHeader>
+            <Divider />
+            <List>
+              <Link to="/apps">
+                <ListItem button>
+                  <ListItemIcon sx={{ minWidth: 30, mb: 2 }}>
+                    <BookmarksIcon fontSize="large" />
+                  </ListItemIcon>
+                  <ListItemText />
+                </ListItem>
+              </Link>
+              <Link to="/settings">
+                <ListItem button>
+                  <ListItemIcon sx={{ minWidth: 30 }}>
+                    <SettingsIcon fontSize="large" />
+                  </ListItemIcon>
+                  <ListItemText />
+                </ListItem>
+              </Link>
+            </List>
+            <Divider />
+          </Drawer>
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              p: 3,
+              m: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <DrawerHeader />
 
-            <ListItem button>
-              <ListItemIcon sx={{ minWidth: 30 }}>
-                <SettingsIcon fontSize="large" />
-              </ListItemIcon>
-              <ListItemText />
-            </ListItem>
-          </List>
-          <Divider />
-        </Drawer>
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            m: 3,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <DrawerHeader />
-          <Paper>
-            <Box component="form" noValidate sx={{ mt: 1, padding: 8 }}>
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="oktatenent"
-                label="Okta Tenent"
-                name="oktatenent"
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="apikey"
-                label="API Key"
-                id="apikey"
-              />
-              <Box sx={{ display: 'flex' }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  sx={{ mt: 3, mb: 2, mr: 2 }}
-                >
-                  Test
-                </Button>
-                <Button
-                  fullWidth
-                  type="submit"
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                >
-                  Save
-                </Button>
-              </Box>
-            </Box>
-          </Paper>
+            <Switch>
+              <Route exact path="/" component={Apps} />
+              <Route exact path="/apps" component={Apps} />
+              <Route exact path="/settings" component={Settings} />
+            </Switch>
+          </Box>
         </Box>
-      </Box>
+      </Router>
     </ThemeProvider>
-  );
-}
-
-export default function App() {
-  return (
-    <Router>
-      <Switch>
-        <Route path="/" component={MiniDrawer} />
-      </Switch>
-    </Router>
   );
 }
