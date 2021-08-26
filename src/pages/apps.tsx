@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import ReactFlow from 'react-flow-renderer';
+import { getApplications } from '../api/oktapi';
 // import { getApplications } from './oktapi';
 
 export default function Apps() {
@@ -115,6 +116,9 @@ export default function Apps() {
   ];
   const [elements, setElements] = useState(initialElements);
 
+  useEffect(() => {
+    getApplications().then((response) => console.log(response));
+  }, []);
   const onLoad = (reactFlowInstance: any) => reactFlowInstance.fitView();
 
   return (

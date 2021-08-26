@@ -9,7 +9,7 @@ import {
 
 export default function Settings() {
   const [settingsValid, setSettingsValid] = useState(
-    localStorage.getItem(WS_OKTA_SETTINGS_VALID) === 'true' ? true : false
+    localStorage.getItem(WS_OKTA_SETTINGS_VALID) === 'true'
   );
   const [baseURL, setBaseURL] = useState(
     localStorage.getItem(WS_OKTA_BASE_URL_KEY) ?? ''
