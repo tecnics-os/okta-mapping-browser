@@ -7,7 +7,9 @@ import {
   WS_OKTA_SETTINGS_VALID,
 } from '../constants';
 
-export default function Settings() {
+interface SettingsProps {}
+
+export default function Settings(props: SettingsProps) {
   const [settingsValid, setSettingsValid] = useState(
     localStorage.getItem(WS_OKTA_SETTINGS_VALID) === 'true'
   );
@@ -34,7 +36,7 @@ export default function Settings() {
 
   return (
     <Paper>
-      <Box component="form" noValidate sx={{ mt: 1, padding: 8 }}>
+      <Box component="form" sx={{ mt: 1, padding: 8 }}>
         <TextField
           margin="normal"
           required
@@ -63,7 +65,7 @@ export default function Settings() {
           <Button
             fullWidth
             variant="outlined"
-            sx={{ mt: 3, mb: 2, mr: 2 }}
+            // sx={{ mt: 3, mb: 2, mr: 2 }}
             onClick={handleTest}
           >
             {settingsValid ? 'Valid.' : 'Test'}
@@ -72,7 +74,7 @@ export default function Settings() {
             fullWidth
             type="submit"
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            // sx={{ mt: 3, mb: 2 }}
             disabled={!settingsValid}
             onClick={handleSave}
           >

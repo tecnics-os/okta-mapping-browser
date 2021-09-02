@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import ReactFlow from 'react-flow-renderer';
 import { getApplications } from '../api/oktapi';
 // import { getApplications } from './oktapi';
@@ -117,12 +116,12 @@ export default function Apps() {
   const [elements, setElements] = useState(initialElements);
 
   useEffect(() => {
-    getApplications().then((response) => console.log(response));
+    // getApplications().then((response) => console.log(response));
   }, []);
   const onLoad = (reactFlowInstance: any) => reactFlowInstance.fitView();
 
   return (
-    <div style={{ width: '1920px', height: '1080px' }}>
+    <div style={{ width: '98vw', height: '82vh', display: 'flex' }}>
       <ReactFlow elements={elements} onLoad={onLoad} />
     </div>
   );
