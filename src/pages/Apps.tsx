@@ -1,127 +1,121 @@
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import ReactFlow from 'react-flow-renderer';
-import { getApplications } from '../api/oktapi';
+// import { getApplications } from '../api/oktapi';
 // import { getApplications } from './oktapi';
 
 export default function Apps() {
-  const initialElements = [
-    {
-      id: 'horizontal-1',
-      sourcePosition: 'right',
-      type: 'input',
-      className: 'dark-node',
-      data: { label: 'Input' },
-      position: { x: 0, y: 80 },
-    },
-    {
-      id: 'horizontal-2',
-      sourcePosition: 'right',
-      targetPosition: 'left',
-      data: { label: 'A Node' },
-      position: { x: 250, y: 0 },
-    },
-    {
-      id: 'horizontal-3',
-      sourcePosition: 'right',
-      targetPosition: 'left',
-      data: { label: 'Node 3' },
-      position: { x: 250, y: 160 },
-    },
-    {
-      id: 'horizontal-4',
-      sourcePosition: 'right',
-      targetPosition: 'left',
-      data: { label: 'Node 4' },
-      position: { x: 500, y: 0 },
-    },
-    {
-      id: 'horizontal-5',
-      sourcePosition: 'top',
-      targetPosition: 'bottom',
-      data: { label: 'Node 5' },
-      position: { x: 500, y: 100 },
-    },
-    {
-      id: 'horizontal-6',
-      sourcePosition: 'bottom',
-      targetPosition: 'top',
-      data: { label: 'Node 6' },
-      position: { x: 500, y: 230 },
-    },
-    {
-      id: 'horizontal-7',
-      sourcePosition: 'right',
-      targetPosition: 'left',
-      data: { label: 'Node 7' },
-      position: { x: 750, y: 50 },
-    },
-    {
-      id: 'horizontal-8',
-      sourcePosition: 'right',
-      targetPosition: 'left',
-      data: { label: 'Node 8' },
-      position: { x: 750, y: 300 },
-    },
+  const initialElements: {
+    id: string;
+    type: string;
+    data?: { label: any } | { label: string };
+    position?: { x: number; y: number } | { x: number; y: number };
+    sourcePosition?: string;
+    targetPosition?: string;
+    source?: string;
+    target?: string;
+    animated?: boolean;
+    arrowHeadType?: string;
+  }[] = [];
 
-    {
-      id: 'horizontal-e1-2',
-      source: 'horizontal-1',
-      type: 'smoothstep',
-      target: 'horizontal-2',
-      animated: true,
-    },
-    {
-      id: 'horizontal-e1-3',
-      source: 'horizontal-1',
-      type: 'smoothstep',
-      target: 'horizontal-3',
-      animated: true,
-    },
-    {
-      id: 'horizontal-e1-4',
-      source: 'horizontal-2',
-      type: 'smoothstep',
-      target: 'horizontal-4',
-      label: 'edge label',
-    },
-    {
-      id: 'horizontal-e3-5',
-      source: 'horizontal-3',
-      type: 'smoothstep',
-      target: 'horizontal-5',
-      animated: true,
-    },
-    {
-      id: 'horizontal-e3-6',
-      source: 'horizontal-3',
-      type: 'smoothstep',
-      target: 'horizontal-6',
-      animated: true,
-    },
-    {
-      id: 'horizontal-e5-7',
-      source: 'horizontal-5',
-      type: 'smoothstep',
-      target: 'horizontal-7',
-      animated: true,
-    },
-    {
-      id: 'horizontal-e6-8',
-      source: 'horizontal-6',
-      type: 'smoothstep',
-      target: 'horizontal-8',
-      animated: true,
-    },
-  ];
-  const [elements, setElements] = useState(initialElements);
+  const [elements, setElements] = useState();
 
-  useEffect(() => {
-    // getApplications().then((response) => console.log(response));
-  }, []);
   const onLoad = (reactFlowInstance: any) => reactFlowInstance.fitView();
 
+  const sourceTargetPosition = { source: 'right', target: 'left' };
+  const edgeType = 'straight';
+  let id = 0;
+
+  const getNodeId = () => `node-${(id += 1).toString()}`;
+
+  function createElements(data) {
+    const displayNames = Object.keys(data);
+    for (
+      let displayNamesIndex = 0;
+      displayNamesIndex < displayNames.length;
+      displayNamesIndex += 1
+    ) {
+      const sourcePosition = {
+        x: 100,
+        y: 100 * (displayNamesIndex + 1),
+      };
+
+      const targetPosition = {
+        x: 500,
+        y: 100 * (displayNamesIndex + 1),
+      };
+
+      const sourceId = getNodeId();
+      const okatFieldName = displayNames[displayNamesIndex];
+      const sourceData = { label: data[okatFieldName].expression };
+
+      const sourceNode = {
+        id: sourceId,
+        type: 'input',
+        data: sourceData,
+        position: sourcePosition,
+        sourcePosition: sourceTargetPosition.source,
+      };
+
+      const targetId = getNodeId();
+      const targetData = { label: displayNames[displayNamesIndex] };
+
+      const targetNode = {
+        id: targetId,
+        type: 'output',
+        data: targetData,
+        position: targetPosition,
+        targetPosition: sourceTargetPosition.target,
+      };
+
+      initialElements.push(sourceNode);
+      initialElements.push(targetNode);
+
+      initialElements.push({
+        id: `${sourceId}-${targetId}`,
+        source: sourceId,
+        target: targetId,
+        animated: true,
+        type: edgeType,
+        arrowHeadType: 'arrowclosed',
+      });
+    }
+    setElements(initialElements);
+  }
+
+  useEffect(() => {
+    const headers = {
+      Accept: 'application/json',
+      Authorization: 'SSWS 00vo6XdAbMND1xRwvvoADFIHeaoJh-_CoeNOTS1zXD',
+    };
+
+    axios
+      .get('https://dev-67150963.okta.com/api/v1/mappings', {
+        params: {
+          sourceId: '0oa1sq07cdQQzbXbE5d7',
+        },
+        headers,
+      })
+      .then((response) => {
+        const mappingId = response.data[0].id;
+        axios
+          .get(`https://dev-67150963.okta.com/api/v1/mappings/${mappingId}`, {
+            headers,
+          })
+          .then((mappingResponse) => {
+            const rawData = mappingResponse.data;
+            const { properties } = rawData;
+            const data = properties;
+            createElements(data);
+          })
+          .catch((error) => {
+          });
+      })
+      });
+  }, []);
+
   return (
-    <div style={{ width: '98vw', height: '82vh', display: 'flex' }}>
+    <div style={{ width: '200vh', height: '182vh', display: 'flex' }}>
       <ReactFlow elements={elements} onLoad={onLoad} />
     </div>
   );
