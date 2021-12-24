@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -9,7 +9,11 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-
+import axios from 'axios';
+import * as dotenv from 'dotenv';
+// import UserProfileMappings from '../pages/ProfileMappings';
+// import ProfileMappings from '../pages/ProfileMappings2';
+import { useHistory } from 'react-router-dom';
 interface SideBarProps {
   open: boolean;
   handleDrawerClose: any;
@@ -84,44 +88,102 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const SideBar = (props: SideBarProps) => {
+  dotenv.config();
   const classes = useStyles();
   const theme = useTheme();
+
+  const [listOfApps, setListOfApps] = useState<any>([]);
+  const [loadedData, setLoadedData] = useState<any>(false);
+
+  var appsData: any = [...listOfApps];
+
+  const url =
+    'https://dev-67150963.okta.com/api/v1/apps?filter=status eq "ACTIVE"';
+
+  const getApiData = () => {
+    axios({
+      method: 'get',
+      url: `${url}`,
+      headers: {
+        Authorization: 'SSWS 006D9kXB5XS7Iv3rIvaQSiXkNCiEagJIpAeVjZ2Qj5',
+        // Authorization: `SSWS ${process.env.REACT_APP_OKTA_TOKEN}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    }).then((response) => {
+      let Data = response.data;
+      setListOfApps(Data);
+      setLoadedData(true);
+      console.log('data', Data);
+    });
+  };
+
+  useEffect(() => {
+    getApiData();
+  }, []);
+
+  let history = useHistory();
+
+  const redirect = (id: any, label: any) => {
+    // console.log(id, label, 'redirect');
+    history.push(`/mappings/${id}/${label}`);
+  };
+
+  const pushAppsData = () => {
+    let apiData: any = [];
+    Object.keys(appsData).forEach((item: any, index: any) => {
+      if (index > 2) {
+        apiData.push(
+          <>
+            <Divider />
+            <List>
+              <ListItem button>
+                <ListItemText
+                  primary={appsData[index].label}
+                  onClick={() => {
+                    redirect(appsData[index].id, appsData[index].label);
+                  }}
+                />
+              </ListItem>
+            </List>
+            <Divider />
+          </>
+        );
+      }
+    });
+    // setAppsList(apiData);
+    return apiData;
+  };
+
   return (
-    <Drawer
-      variant="permanent"
-      className={clsx(classes.drawer, {
-        [classes.drawerOpen]: props.open,
-        [classes.drawerClose]: !props.open,
-      })}
-      classes={{
-        paper: clsx({
-          [classes.drawerOpen]: props.open,
-          [classes.drawerClose]: !props.open,
-        }),
-      }}
-    >
-      <div className={classes.toolbar}>
-        <IconButton onClick={props.handleDrawerClose}>
-          {theme.direction === 'rtl' ? (
-            <ChevronRightIcon />
-          ) : (
-            <ChevronLeftIcon />
-          )}
-        </IconButton>
-      </div>
-      <Divider />
-      <List>
-        <ListItem button>
-          <ListItemText primary="App1" />
-        </ListItem>
-      </List>
-      <Divider />
-      <List>
-        <ListItem button>
-          <ListItemText primary="App2" />
-        </ListItem>
-      </List>
-    </Drawer>
+    <>
+      {loadedData && (
+        <Drawer
+          variant="permanent"
+          className={clsx(classes.drawer, {
+            [classes.drawerOpen]: props.open,
+            [classes.drawerClose]: !props.open,
+          })}
+          classes={{
+            paper: clsx({
+              [classes.drawerOpen]: props.open,
+              [classes.drawerClose]: !props.open,
+            }),
+          }}
+        >
+          <div className={classes.toolbar}>
+            <IconButton onClick={props.handleDrawerClose}>
+              {theme.direction === 'rtl' ? (
+                <ChevronRightIcon />
+              ) : (
+                <ChevronLeftIcon />
+              )}
+            </IconButton>
+          </div>
+          {pushAppsData()}
+        </Drawer>
+      )}
+    </>
   );
 };
 
