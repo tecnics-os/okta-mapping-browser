@@ -114,7 +114,6 @@ const SideBar = (props: SideBarProps) => {
       let Data = response.data;
       setListOfApps(Data);
       setLoadedData(true);
-      console.log('data', Data);
     });
   };
 

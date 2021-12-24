@@ -80,12 +80,6 @@ const ProfileMappings = () => {
   var oktaToAppApiData = { ...oktaToAppMappingData };
 
   const baseUrl = 'https://dev-67150963.okta.com/api/v1/mappings';
-  var sourceIdUrl = `${baseUrl}?sourceId=${id}`;
-  var targetIdUrl = `${baseUrl}?targetId=${id}`;
-  var appToOktaMappingUrl = `${baseUrl}/${appToOktaMappingId}`;
-  var oktaToAppMappingUrl = `${baseUrl}/${oktaToAppMappingId}`;
-
-  console.log('mappingId', appToOktaMappingId);
 
   const getUrl = (url: string) => {
     return axios({
@@ -100,6 +94,8 @@ const ProfileMappings = () => {
   };
 
   const getApiData = () => {
+    const sourceIdUrl = `${baseUrl}?sourceId=${id}`;
+    const targetIdUrl = `${baseUrl}?targetId=${id}`;
     axios
       .all([getUrl(sourceIdUrl), getUrl(targetIdUrl)])
       .then(
@@ -108,20 +104,28 @@ const ProfileMappings = () => {
           let responseTwo = responses[1];
           let appToOktaMappingId = responseOne.data[0].id;
           let oktaToAppMappingId = responseTwo.data[0].id;
+          console.log(appToOktaMappingId);
+
           setAppToOktaMappingId(appToOktaMappingId);
           setOktaToAppMappingId(oktaToAppMappingId);
-          //   setLoadedData(true);
+          setLoadedData(true);
+          getMappingData(appToOktaMappingId, oktaToAppMappingId);
         })
       )
-      .then(() => {
-        getMappingData();
-      })
+      //       .then(() => {
+      //         // if (loadedData) {
+      //         console.log(appToOktaMappingId);
+      //         getMappingData(appToOktaMappingId, oktaToAppMappingId);
+      //         // }
+      //       })
       .catch((errors) => {
         console.error(errors);
       });
   };
 
-  const getMappingData = () => {
+  const getMappingData = (id1: string, id2: string) => {
+    const appToOktaMappingUrl = `${baseUrl}/${id1}`;
+    const oktaToAppMappingUrl = `${baseUrl}/${id2}`;
     axios
       .all([getUrl(appToOktaMappingUrl), getUrl(oktaToAppMappingUrl)])
       .then(
@@ -132,7 +136,7 @@ const ProfileMappings = () => {
           let oktaToAppMappingData = response2.data;
           setAppToOktaMappingData(appToOktaMappingData);
           setOktaToAppMappingData(oktaToAppMappingData);
-          setLoadedData(true);
+          //   setLoadedData(true);
         })
       )
       .catch((errors) => {
@@ -141,7 +145,10 @@ const ProfileMappings = () => {
   };
 
   useEffect(() => {
+    setAttributeMapping(initialElements);
     getApiData();
+
+    //     getApiData();
   }, [id]);
 
   const onElementClick = (event: any) => {
@@ -168,8 +175,6 @@ const ProfileMappings = () => {
   };
 
   const showApptoOktaMapping = (apiData: any) => {
-    console.log(appToOktaMappingUrl);
-
     let tempNodes: any = [...initialElements];
     let yCoordinateOfElement = 0;
     Object.keys(apiData.properties).forEach((item, index) => {

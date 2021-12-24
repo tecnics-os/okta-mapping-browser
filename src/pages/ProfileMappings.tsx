@@ -59,9 +59,18 @@ const UserProfileMappings = () => {
     initialElements
   );
 
+  const onElementClick = () => {
+    alert('Please select any application for viewing the mapping.');
+  };
+
   return (
     <div style={customNodeStyles}>
-      {<ReactFlow elements={attributeMapping} />}
+      {
+        <ReactFlow
+          elements={attributeMapping}
+          onElementClick={onElementClick}
+        />
+      }
     </div>
   );
 };
