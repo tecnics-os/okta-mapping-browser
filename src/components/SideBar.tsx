@@ -128,7 +128,7 @@ const SideBar = (props: SideBarProps) => {
     history.push(`/mappings/${id}/${label}`);
   };
 
-  const pushAppsData = () => {
+  const pushAppNames = () => {
     let apiData: any = [];
     Object.keys(appsData).forEach((item: any, index: any) => {
       if (index > 2) {
@@ -179,7 +179,7 @@ const SideBar = (props: SideBarProps) => {
               )}
             </IconButton>
           </div>
-          {pushAppsData()}
+          {pushAppNames()}
         </Drawer>
       )}
     </>
