@@ -25,13 +25,21 @@ export default function Settings(props: SettingsProps) {
     setSettingsValid(status);
   };
 
-  const handleSave = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSave = async () => {
     const status = await testApi(baseURL, apiKey);
+    console.log(baseURL, apiKey);
+
+    console.log('status', status);
     if (status) {
       localStorage.setItem(WS_OKTA_BASE_URL_KEY, baseURL);
       localStorage.setItem(WS_OKTA_API_TOKEN_KEY, apiKey);
       localStorage.setItem(WS_OKTA_SETTINGS_VALID, 'true');
     }
+  };
+
+  const handleRefresh = () => {
+    window.localStorage.clear();
+    window.location.reload();
   };
 
   return (
@@ -41,8 +49,8 @@ export default function Settings(props: SettingsProps) {
           margin="normal"
           required
           fullWidth
-          id="oktatenent"
-          label="Okta Tenent"
+          id="oktatenant"
+          label="Okta Tenant base URL"
           name="oktatenent"
           defaultValue={baseURL}
           onChange={(event) => {
@@ -76,9 +84,20 @@ export default function Settings(props: SettingsProps) {
             variant="contained"
             // sx={{ mt: 3, mb: 2 }}
             disabled={!settingsValid}
-            onClick={handleSave}
+            onClick={() => {
+              handleSave().then(() => window.location.reload());
+              // console.log(apiKey, baseURL);
+            }}
           >
             Save
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            type="submit"
+            onClick={handleRefresh}
+          >
+            New Okta tenant
           </Button>
         </Box>
       </Box>

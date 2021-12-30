@@ -11,13 +11,17 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import axios from 'axios';
 import * as dotenv from 'dotenv';
-// import UserProfileMappings from '../pages/ProfileMappings';
-// import ProfileMappings from '../pages/ProfileMappings2';
 import { useHistory } from 'react-router-dom';
+import { WS_OKTA_API_TOKEN_KEY, WS_OKTA_BASE_URL_KEY } from '../constants';
+import { request } from '../Request';
 interface SideBarProps {
   open: boolean;
   handleDrawerClose: any;
 }
+
+const apiKey = localStorage.getItem(WS_OKTA_API_TOKEN_KEY);
+const baseUrl = localStorage.getItem(WS_OKTA_BASE_URL_KEY);
+// console.log('ws', apiKey);
 
 const drawerWidth = 240;
 
@@ -92,63 +96,119 @@ const SideBar = (props: SideBarProps) => {
   const classes = useStyles();
   const theme = useTheme();
 
+  const [userProfileTemplateId, setUserProfileTemplateId] = useState<any>('');
   const [listOfApps, setListOfApps] = useState<any>([]);
   const [loadedData, setLoadedData] = useState<any>(false);
 
-  var appsData: any = [...listOfApps];
+  const appsData: any = [...listOfApps];
 
-  const url =
-    'https://dev-67150963.okta.com/api/v1/apps?filter=status eq "ACTIVE"';
+  // const userProfileTemplateUrl = `https://dev-67150963.okta.com/api/v1/user/types`;
+  // const appNamesUrl = `https://dev-67150963.okta.com/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`;
 
-  const getApiData = () => {
-    axios({
-      method: 'get',
-      url: `${url}`,
-      headers: {
-        Authorization: 'SSWS 006D9kXB5XS7Iv3rIvaQSiXkNCiEagJIpAeVjZ2Qj5',
-        // Authorization: `SSWS ${process.env.REACT_APP_OKTA_TOKEN}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    }).then((response) => {
-      let Data = response.data;
-      setListOfApps(Data);
-      setLoadedData(true);
+  const userProfileTemplateUrl = `${baseUrl}/api/v1/user/types`;
+  const appNamesUrl = `${baseUrl}/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`;
+
+  const sendUrl = (url: string) => {
+    // return axios({
+    //   method: 'get',
+    //   url: `${url}`,
+    //   headers: {
+    //     // Authorization: 'SSWS 00qgXvmjAIJpwx87gOeiUuHLS_zEBFeIX8omqyUTIN',
+    //     Authorization: `SSWS ${apiKey}`,
+    //     Accept: 'application/json',
+    //     'Content-Type': 'application/json',
+    //   },
+    // });
+    request(`/api/v1/user/types`).then((response) => {
+      console.log(response);
     });
   };
 
+  // const getProfileTemplateAndAppIds = () => {
+  //   axios
+  //     .all([sendUrl(userProfileTemplateUrl), sendUrl(appNamesUrl)])
+  //     .then(
+  //       axios.spread((...responses) => {
+  //         let responseOne = responses[0];
+  //         let responseTwo = responses[1];
+  //         let defaultId = responseOne.data[0].id;
+  //         let appData = responseTwo.data;
+  //         setUserProfileTemplateId(defaultId);
+  //         setListOfApps(appData);
+  //         setLoadedData(true);
+  //       })
+  //     )
+  //     .catch((errors) => {
+  //       console.error(errors);
+  //     });
+  // };
+
+  // const getApiData = () => {
+  //   axios({
+  //     method: 'get',
+  //     url: `${url}`,
+  //     headers: {
+  //       // Authorization: 'SSWS 00qgXvmjAIJpwx87gOeiUuHLS_zEBFeIX8omqyUTIN',
+  //       // Authorization: `SSWS ${apiKey}`,
+  //       Authorization: `SSWS ${process.env.REACT_APP_OKTA_TOKEN}`,
+  //       Accept: 'application/json',
+  //       'Content-Type': 'application/json',
+  //     },
+  //   }).then((response) => {
+  //     let Data = response.data;
+  //     setListOfApps(Data);
+  //     setLoadedData(true);
+  //   });
+  // };
+
   useEffect(() => {
-    getApiData();
+    // getProfileTemplateAndAppIds();
+    sendUrl(`${baseUrl}/api/v1/user/types`);
   }, []);
 
   let history = useHistory();
 
-  const redirect = (id: any, label: any) => {
-    // console.log(id, label, 'redirect');
-    history.push(`/mappings/${id}/${label}`);
+  const redirect = (id1: any, id2: any, label: any, logo: string) => {
+    // console.log(id1, id2, label, logo, 'redirect');
+    const logoUrl = encodeURIComponent(logo);
+    history.push(`/mappings/${id1}/${id2}/${label}/${logoUrl}`);
   };
 
   const pushAppNames = () => {
     let apiData: any = [];
     Object.keys(appsData).forEach((item: any, index: any) => {
-      if (index > 2) {
-        apiData.push(
-          <>
-            <Divider />
-            <List>
-              <ListItem button>
-                <ListItemText
-                  primary={appsData[index].label}
-                  onClick={() => {
-                    redirect(appsData[index].id, appsData[index].label);
-                  }}
-                />
-              </ListItem>
-            </List>
-            <Divider />
-          </>
-        );
-      }
+      apiData.push(
+        <>
+          <Divider />
+          <List>
+            <ListItem button>
+              <img
+                style={{
+                  position: 'sticky',
+                  left: '1px',
+                  top: '0px',
+                }}
+                className="appLogo"
+                height="12px"
+                width="auto"
+                src={appsData[index]._embedded.appLogo.href}
+              />
+              <ListItemText
+                primary={appsData[index].displayName}
+                onClick={() => {
+                  redirect(
+                    userProfileTemplateId,
+                    appsData[index].id,
+                    appsData[index].displayName,
+                    appsData[index]._embedded.appLogo.href
+                  );
+                }}
+              />
+            </ListItem>
+          </List>
+          <Divider />
+        </>
+      );
     });
     // setAppsList(apiData);
     return apiData;

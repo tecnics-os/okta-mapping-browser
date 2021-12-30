@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactFlow from 'react-flow-renderer';
 import { useParams } from 'react-router-dom';
-import logo from '../../assets/okta-logo.png';
+import oktaLogo from '../../assets/okta-logo.png';
+import { WS_OKTA_API_TOKEN_KEY, WS_OKTA_BASE_URL_KEY } from '../constants';
 
 const customNodeStyles: any = {
   overflow: 'hidden',
@@ -11,7 +12,8 @@ const customNodeStyles: any = {
 };
 
 const ProfileMappings = () => {
-  let { id = '', label = '' } = { ...useParams() };
+  let { id1 = '', id2 = '', label = '', logo = '' } = { ...useParams() };
+  const appLogo = decodeURIComponent(logo);
 
   const initialElements = [
     {
@@ -59,29 +61,27 @@ const ProfileMappings = () => {
     initialElements
   );
 
-  const [appToOktaMappingId, setAppToOktaMappingId] = React.useState<any>('');
-  const [oktaToAppMappingId, setOktaToAppMappingId] = React.useState<any>('');
   const [appToOktaMappingData, setAppToOktaMappingData] = React.useState<any>(
     {}
   );
   const [oktaToAppMappingData, setOktaToAppMappingData] = React.useState<any>(
     {}
   );
-  //   const [initialElements, setInitialElements] = React.useState<any>([]);
   const [loadedData, setLoadedData] = React.useState<boolean>(false);
-  //   const [loadedUrl, setLoadedUrl] = React.useState<boolean>(false);
 
-  var appToOktaApiData = { ...appToOktaMappingData };
-  var oktaToAppApiData = { ...oktaToAppMappingData };
+  const appToOktaApiData = { ...appToOktaMappingData };
+  const oktaToAppApiData = { ...oktaToAppMappingData };
 
-  const baseUrl = 'https://dev-67150963.okta.com/api/v1/mappings';
+  const baseUrl = localStorage.getItem(WS_OKTA_BASE_URL_KEY);
+  const apiKey = localStorage.getItem(WS_OKTA_API_TOKEN_KEY);
 
-  const getUrl = (url: string) => {
+  const sendUrl = (url: string) => {
     return axios({
       method: 'get',
       url: `${url}`,
       headers: {
-        Authorization: 'SSWS 006D9kXB5XS7Iv3rIvaQSiXkNCiEagJIpAeVjZ2Qj5',
+        // Authorization: 'SSWS 00qgXvmjAIJpwx87gOeiUuHLS_zEBFeIX8omqyUTIN',
+        Authorization: `SSWS ${apiKey}`,
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
@@ -89,43 +89,27 @@ const ProfileMappings = () => {
   };
 
   const getApiData = () => {
-    const sourceIdUrl = `${baseUrl}?sourceId=${id}`;
-    const targetIdUrl = `${baseUrl}?targetId=${id}`;
+    // const baseUrl = 'https://dev-67150963.okta.com/api/internal/v1/mappings';
+    const url = `${baseUrl}/api/internal/v1/mappings`;
+    const appToOktaUrl = `${url}?source=${id2}&target=${id1}`;
+    const oktaToAppUrl = `${url}?source=${id1}&target=${id2}`;
+    // const sourceIdUrl = `${baseUrl}?sourceId=${id2}`;
+    // const targetIdUrl = `${baseUrl}?targetId=${id2}`;
+
+    // const appToOktaUrl = `${baseUrl}?source=${id2}&target=${id1}`;
+    // const oktaToAppUrl = `${baseUrl}?source=${id1}&target=${id2}`;
+
     axios
-      .all([getUrl(sourceIdUrl), getUrl(targetIdUrl)])
+      .all([sendUrl(appToOktaUrl), sendUrl(oktaToAppUrl)])
       .then(
         axios.spread((...responses) => {
           let responseOne = responses[0];
           let responseTwo = responses[1];
-          let appToOktaMappingId = responseOne.data[0].id;
-          let oktaToAppMappingId = responseTwo.data[0].id;
-          console.log(appToOktaMappingId);
-
-          setAppToOktaMappingId(appToOktaMappingId);
-          setOktaToAppMappingId(oktaToAppMappingId);
-          setLoadedData(true);
-          getMappingData(appToOktaMappingId, oktaToAppMappingId);
-        })
-      )
-      .catch((errors) => {
-        console.error(errors);
-      });
-  };
-
-  const getMappingData = (id1: string, id2: string) => {
-    const appToOktaMappingUrl = `${baseUrl}/${id1}`;
-    const oktaToAppMappingUrl = `${baseUrl}/${id2}`;
-    axios
-      .all([getUrl(appToOktaMappingUrl), getUrl(oktaToAppMappingUrl)])
-      .then(
-        axios.spread((...response) => {
-          let response1 = response[0];
-          let response2 = response[1];
-          let appToOktaMappingData = response1.data;
-          let oktaToAppMappingData = response2.data;
+          let appToOktaMappingData = responseOne.data[0];
+          let oktaToAppMappingData = responseTwo.data[0];
           setAppToOktaMappingData(appToOktaMappingData);
           setOktaToAppMappingData(oktaToAppMappingData);
-          //   setLoadedData(true);
+          setLoadedData(true);
         })
       )
       .catch((errors) => {
@@ -136,7 +120,7 @@ const ProfileMappings = () => {
   useEffect(() => {
     setAttributeMapping(initialElements);
     getApiData();
-  }, [id]);
+  }, [id2]);
 
   const onElementClick = (event: any) => {
     if (event.target.id === 'upStream') {
@@ -153,9 +137,9 @@ const ProfileMappings = () => {
       return previousNodeTextLength;
     } else {
       let previousNode = node - 1;
-      previousNodeTextLength = Object.values<any>(apiData.properties)[
+      previousNodeTextLength = Object.values<any>(apiData.propertyMappings)[
         previousNode
-      ].expression.length;
+      ].sourceExpression.length;
       var currentNodeTextLength = previousNodeTextLength / 1.1;
       return currentNodeTextLength;
     }
@@ -163,8 +147,12 @@ const ProfileMappings = () => {
 
   const showApptoOktaMapping = (apiData: any) => {
     let tempNodes: any = [...initialElements];
+    // apiData.propertyMappings.forEach((item: any, index: any) => {
+    //   console.log(item.targetField);
+    // });
+
     let yCoordinateOfElement = 0;
-    Object.keys(apiData.properties).forEach((item, index) => {
+    apiData.propertyMappings.forEach((item: any, index: any) => {
       tempNodes.push(
         {
           id: `userAttr-${index + 1}`,
@@ -179,8 +167,18 @@ const ProfileMappings = () => {
                   overflowWrap: 'break-word',
                 }}
               >
-                {/* <div className="node"> */}
-                {apiData.properties[item].expression}
+                {item.sourceExpression}
+                <img
+                  style={{
+                    position: 'absolute',
+                    right: '1px',
+                    top: '1px',
+                  }}
+                  className="appLogo"
+                  height="10px"
+                  width="auto"
+                  src={appLogo}
+                />
               </div>
             ),
           },
@@ -197,13 +195,13 @@ const ProfileMappings = () => {
           data: {
             label: (
               <div>
-                {item}
+                {item.targetField}
                 <img
                   style={{ position: 'absolute', right: '1px', top: '1px' }}
-                  className="nodeWithLogo"
+                  className="oktaLogo"
                   height="12"
                   width="12"
-                  src={logo}
+                  src={oktaLogo}
                 />
               </div>
             ),
@@ -235,7 +233,7 @@ const ProfileMappings = () => {
   const showOktaToAppMapping = (apiData: any) => {
     let tempNodes: any = [...initialElements];
     let yCoordinateOfElement = 0;
-    Object.keys(apiData.properties).forEach((item, index) => {
+    apiData.propertyMappings.forEach((item: any, index: any) => {
       tempNodes.push(
         {
           id: `userAttr-${index + 1}`,
@@ -251,13 +249,13 @@ const ProfileMappings = () => {
                 }}
               >
                 {/* <div className="node"> */}
-                {apiData.properties[item].expression}
+                {item.sourceExpression}
                 <img
                   style={{ position: 'absolute', right: '1px', top: '1px' }}
                   className="nodeWithLogo"
-                  height="12"
-                  width="12"
-                  src={logo}
+                  height="12px"
+                  width="12px"
+                  src={oktaLogo}
                 />
               </div>
             ),
@@ -272,7 +270,24 @@ const ProfileMappings = () => {
           id: `appAttr-${index + 1}`,
           targetPosition: 'left',
           type: 'output',
-          data: { label: item },
+          data: {
+            label: (
+              <div>
+                {item.targetField}
+                <img
+                  style={{
+                    position: 'absolute',
+                    right: '1px',
+                    top: '1px',
+                  }}
+                  className="appLogo"
+                  height="10px"
+                  width="auto"
+                  src={appLogo}
+                />
+              </div>
+            ),
+          },
           position: {
             x: 900,
             y: yCoordinateOfElement += 50,

@@ -18,7 +18,7 @@ export function ReadOktaSettings(): OktaSettings {
   return {
     key: localStorage.getItem(WS_OKTA_API_TOKEN_KEY) ?? '',
     url: localStorage.getItem(WS_OKTA_BASE_URL_KEY) ?? '',
-    valid: localStorage.getItem(WS_OKTA_BASE_URL_KEY) === 'true',
+    valid: localStorage.getItem(WS_OKTA_SETTINGS_VALID) === 'true',
   };
 }
 const authHeader = {
@@ -41,8 +41,12 @@ export async function testApi(
   const response = await axios({
     method: 'GET',
     baseURL: oktaUrl,
-    url: '/apps',
-    headers: { Authorization: `SSWS ${apiKey}` },
+    url: '/api/v1/user/types',
+    headers: {
+      Authorization: `SSWS ${apiKey}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
   })
     .then((apiResponse: AxiosResponse) => {
       if (apiResponse.status === 200) return true;
@@ -54,10 +58,10 @@ export async function testApi(
   return response;
 }
 
-export async function getApplications(): Promise<unknown> {
-  const response = await restClient().get('/apps');
-  return response.data;
-}
+// export async function getApplications(): Promise<unknown> {
+//   const response = await restClient().get('/api/v1/apps');
+//   return response.data;
+// }
 
 // TODO Get application mapping downstream okta->app
 

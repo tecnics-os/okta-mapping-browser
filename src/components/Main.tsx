@@ -21,12 +21,14 @@ const Main = () => {
     <div className={classes.root}>
       <Switch>
         <Route exact path="/" component={InitialNodes} />
+        <Route
+          exact
+          path="/mappings/:id1/:id2/:label/:logo"
+          component={ProfileMappings}
+        />
         {/* <Route exact path="/" component={Apps} /> */}
         {/* <Route exact path="/apps" component={Apps} /> */}
         <Route exact path="/settings" component={Settings} />
-      </Switch>
-      <Switch>
-        <Route exact path="/mappings/:id/:label" component={ProfileMappings} />
       </Switch>
     </div>
   );
