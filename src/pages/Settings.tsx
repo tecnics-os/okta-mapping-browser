@@ -19,18 +19,16 @@ export default function Settings(props: SettingsProps) {
   const [apiKey, setApiKey] = useState(
     localStorage.getItem(WS_OKTA_API_TOKEN_KEY) ?? ''
   );
+  // const [invalidMessage, setInvalidMessage] = React.useState<any>('Test');
 
   const handleTest = async (event: React.MouseEvent<HTMLButtonElement>) => {
     const status = await testApi(baseURL, apiKey);
     setSettingsValid(status);
   };
 
-  const handleSave = async () => {
-    const status = await testApi(baseURL, apiKey);
-    console.log(baseURL, apiKey);
-
-    console.log('status', status);
-    if (status) {
+  const handleSave: any = () => {
+    // const status = await testApi(baseURL, apiKey);
+    if (settingsValid) {
       localStorage.setItem(WS_OKTA_BASE_URL_KEY, baseURL);
       localStorage.setItem(WS_OKTA_API_TOKEN_KEY, apiKey);
       localStorage.setItem(WS_OKTA_SETTINGS_VALID, 'true');
@@ -85,8 +83,8 @@ export default function Settings(props: SettingsProps) {
             // sx={{ mt: 3, mb: 2 }}
             disabled={!settingsValid}
             onClick={() => {
-              handleSave().then(() => window.location.reload());
-              // console.log(apiKey, baseURL);
+              handleSave();
+              window.location.reload();
             }}
           >
             Save

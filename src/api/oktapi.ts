@@ -21,17 +21,6 @@ export function ReadOktaSettings(): OktaSettings {
     valid: localStorage.getItem(WS_OKTA_SETTINGS_VALID) === 'true',
   };
 }
-const authHeader = {
-  Authorization: `SSWS ${ReadOktaSettings().key}`,
-};
-
-const restClient = () => {
-  return axios.create({
-    baseURL: ReadOktaSettings().url,
-    timeout: 5000,
-    headers: authHeader,
-  });
-};
 
 // test app should create a client form the scratch, to check the settings from user input.
 export async function testApi(
@@ -57,12 +46,3 @@ export async function testApi(
     });
   return response;
 }
-
-// export async function getApplications(): Promise<unknown> {
-//   const response = await restClient().get('/api/v1/apps');
-//   return response.data;
-// }
-
-// TODO Get application mapping downstream okta->app
-
-// TODO Get application mapping upstream app->okta

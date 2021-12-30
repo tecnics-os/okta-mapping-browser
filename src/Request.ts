@@ -1,25 +1,26 @@
+import axios, { AxiosResponse } from 'axios';
 import { WS_OKTA_API_TOKEN_KEY, WS_OKTA_BASE_URL_KEY } from './constants';
 
 const apiKey = localStorage.getItem(WS_OKTA_API_TOKEN_KEY);
 const baseUrl = localStorage.getItem(WS_OKTA_BASE_URL_KEY);
 
 export class ResponseError extends Error {
-  public response: Response;
+  public response: AxiosResponse;
 
-  constructor(response: Response) {
+  constructor(response: AxiosResponse) {
     super(response.statusText);
     this.response = response;
   }
 }
 
-function parseJSON(response: Response) {
+function parseJSON(response: AxiosResponse) {
   if (response.status === 204 || response.status === 205) {
     return null;
   }
-  return response.json();
+  return response;
 }
 
-function checkStatus(response: Response) {
+function checkStatus(response: AxiosResponse) {
   if (response.status >= 200 && response.status < 300) {
     return response;
   }
@@ -30,23 +31,18 @@ function checkStatus(response: Response) {
 
 const headers = {
   headers: {
-    // Authorization: 'SSWS 00qgXvmjAIJpwx87gOeiUuHLS_zEBFeIX8omqyUTIN',
     Authorization: `SSWS ${apiKey}`,
     Accept: 'application/json',
     'Content-Type': 'application/json',
   },
 };
 
-export async function request(
-  url: string,
-  options?: any
-): Promise<{} | { err: ResponseError }> {
-  console.log({ ...options, ...headers });
-
-  const fetchResponse = await fetch(`${baseUrl}${url}`, {
-    ...options,
+export async function request(url: string, options?: any) {
+  const getResponse: AxiosResponse<any> = await axios({
+    method: 'GET',
+    url: `${baseUrl}${url}`,
     ...headers,
   });
-  const response = checkStatus(fetchResponse);
+  const response: AxiosResponse<any> = checkStatus(getResponse);
   return parseJSON(response);
 }

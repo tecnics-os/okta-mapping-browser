@@ -12,16 +12,11 @@ import ListItemText from '@material-ui/core/ListItemText';
 import axios from 'axios';
 import * as dotenv from 'dotenv';
 import { useHistory } from 'react-router-dom';
-import { WS_OKTA_API_TOKEN_KEY, WS_OKTA_BASE_URL_KEY } from '../constants';
 import { request } from '../Request';
 interface SideBarProps {
   open: boolean;
   handleDrawerClose: any;
 }
-
-const apiKey = localStorage.getItem(WS_OKTA_API_TOKEN_KEY);
-const baseUrl = localStorage.getItem(WS_OKTA_BASE_URL_KEY);
-// console.log('ws', apiKey);
 
 const drawerWidth = 240;
 
@@ -102,68 +97,35 @@ const SideBar = (props: SideBarProps) => {
 
   const appsData: any = [...listOfApps];
 
-  // const userProfileTemplateUrl = `https://dev-67150963.okta.com/api/v1/user/types`;
-  // const appNamesUrl = `https://dev-67150963.okta.com/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`;
-
-  const userProfileTemplateUrl = `${baseUrl}/api/v1/user/types`;
-  const appNamesUrl = `${baseUrl}/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`;
-
   const sendUrl = (url: string) => {
-    // return axios({
-    //   method: 'get',
-    //   url: `${url}`,
-    //   headers: {
-    //     // Authorization: 'SSWS 00qgXvmjAIJpwx87gOeiUuHLS_zEBFeIX8omqyUTIN',
-    //     Authorization: `SSWS ${apiKey}`,
-    //     Accept: 'application/json',
-    //     'Content-Type': 'application/json',
-    //   },
-    // });
-    request(`/api/v1/user/types`).then((response) => {
-      console.log(response);
-    });
+    return request(url);
   };
 
-  // const getProfileTemplateAndAppIds = () => {
-  //   axios
-  //     .all([sendUrl(userProfileTemplateUrl), sendUrl(appNamesUrl)])
-  //     .then(
-  //       axios.spread((...responses) => {
-  //         let responseOne = responses[0];
-  //         let responseTwo = responses[1];
-  //         let defaultId = responseOne.data[0].id;
-  //         let appData = responseTwo.data;
-  //         setUserProfileTemplateId(defaultId);
-  //         setListOfApps(appData);
-  //         setLoadedData(true);
-  //       })
-  //     )
-  //     .catch((errors) => {
-  //       console.error(errors);
-  //     });
-  // };
-
-  // const getApiData = () => {
-  //   axios({
-  //     method: 'get',
-  //     url: `${url}`,
-  //     headers: {
-  //       // Authorization: 'SSWS 00qgXvmjAIJpwx87gOeiUuHLS_zEBFeIX8omqyUTIN',
-  //       // Authorization: `SSWS ${apiKey}`,
-  //       Authorization: `SSWS ${process.env.REACT_APP_OKTA_TOKEN}`,
-  //       Accept: 'application/json',
-  //       'Content-Type': 'application/json',
-  //     },
-  //   }).then((response) => {
-  //     let Data = response.data;
-  //     setListOfApps(Data);
-  //     setLoadedData(true);
-  //   });
-  // };
+  const getProfileTemplateAndAppIds = () => {
+    let baseUrl = `/api/v1/user/types`;
+    axios
+      .all([
+        sendUrl(baseUrl),
+        sendUrl(`/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`),
+      ])
+      .then(
+        axios.spread((...responses) => {
+          let responseOne = responses[0];
+          let responseTwo = responses[1];
+          let defaultId = responseOne!.data[0].id;
+          let appData = responseTwo!.data;
+          setUserProfileTemplateId(defaultId);
+          setListOfApps(appData);
+          setLoadedData(true);
+        })
+      )
+      .catch((errors) => {
+        console.error(errors);
+      });
+  };
 
   useEffect(() => {
-    // getProfileTemplateAndAppIds();
-    sendUrl(`${baseUrl}/api/v1/user/types`);
+    getProfileTemplateAndAppIds();
   }, []);
 
   let history = useHistory();
@@ -210,7 +172,6 @@ const SideBar = (props: SideBarProps) => {
         </>
       );
     });
-    // setAppsList(apiData);
     return apiData;
   };
 

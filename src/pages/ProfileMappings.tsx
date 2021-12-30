@@ -3,7 +3,8 @@ import axios from 'axios';
 import ReactFlow from 'react-flow-renderer';
 import { useParams } from 'react-router-dom';
 import oktaLogo from '../../assets/okta-logo.png';
-import { WS_OKTA_API_TOKEN_KEY, WS_OKTA_BASE_URL_KEY } from '../constants';
+import { request } from '../Request';
+// import { WS_OKTA_API_TOKEN_KEY, WS_OKTA_BASE_URL_KEY } from '../constants';
 
 const customNodeStyles: any = {
   overflow: 'hidden',
@@ -71,33 +72,16 @@ const ProfileMappings = () => {
 
   const appToOktaApiData = { ...appToOktaMappingData };
   const oktaToAppApiData = { ...oktaToAppMappingData };
-
-  const baseUrl = localStorage.getItem(WS_OKTA_BASE_URL_KEY);
-  const apiKey = localStorage.getItem(WS_OKTA_API_TOKEN_KEY);
-
   const sendUrl = (url: string) => {
-    return axios({
-      method: 'get',
-      url: `${url}`,
-      headers: {
-        // Authorization: 'SSWS 00qgXvmjAIJpwx87gOeiUuHLS_zEBFeIX8omqyUTIN',
-        Authorization: `SSWS ${apiKey}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
+    return request(url);
   };
 
   const getApiData = () => {
+    // Authorization: 'SSWS 00Vvsg0QubATDRcwDWxpgRByqcpWJWFGcVjsDQnazX',
     // const baseUrl = 'https://dev-67150963.okta.com/api/internal/v1/mappings';
-    const url = `${baseUrl}/api/internal/v1/mappings`;
+    const url = `/api/internal/v1/mappings`;
     const appToOktaUrl = `${url}?source=${id2}&target=${id1}`;
     const oktaToAppUrl = `${url}?source=${id1}&target=${id2}`;
-    // const sourceIdUrl = `${baseUrl}?sourceId=${id2}`;
-    // const targetIdUrl = `${baseUrl}?targetId=${id2}`;
-
-    // const appToOktaUrl = `${baseUrl}?source=${id2}&target=${id1}`;
-    // const oktaToAppUrl = `${baseUrl}?source=${id1}&target=${id2}`;
 
     axios
       .all([sendUrl(appToOktaUrl), sendUrl(oktaToAppUrl)])
@@ -105,8 +89,8 @@ const ProfileMappings = () => {
         axios.spread((...responses) => {
           let responseOne = responses[0];
           let responseTwo = responses[1];
-          let appToOktaMappingData = responseOne.data[0];
-          let oktaToAppMappingData = responseTwo.data[0];
+          let appToOktaMappingData = responseOne!.data[0];
+          let oktaToAppMappingData = responseTwo!.data[0];
           setAppToOktaMappingData(appToOktaMappingData);
           setOktaToAppMappingData(oktaToAppMappingData);
           setLoadedData(true);
@@ -147,10 +131,6 @@ const ProfileMappings = () => {
 
   const showApptoOktaMapping = (apiData: any) => {
     let tempNodes: any = [...initialElements];
-    // apiData.propertyMappings.forEach((item: any, index: any) => {
-    //   console.log(item.targetField);
-    // });
-
     let yCoordinateOfElement = 0;
     apiData.propertyMappings.forEach((item: any, index: any) => {
       tempNodes.push(
