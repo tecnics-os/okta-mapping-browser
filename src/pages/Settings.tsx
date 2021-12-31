@@ -19,11 +19,12 @@ export default function Settings(props: SettingsProps) {
   const [apiKey, setApiKey] = useState(
     localStorage.getItem(WS_OKTA_API_TOKEN_KEY) ?? ''
   );
-  // const [invalidMessage, setInvalidMessage] = React.useState<any>('Test');
+  const [clickValidation, setClickValidation] = React.useState<any>(false);
 
   const handleTest = async (event: React.MouseEvent<HTMLButtonElement>) => {
     const status = await testApi(baseURL, apiKey);
     setSettingsValid(status);
+    setClickValidation(true);
   };
 
   const handleSave: any = () => {
@@ -53,6 +54,8 @@ export default function Settings(props: SettingsProps) {
           defaultValue={baseURL}
           onChange={(event) => {
             setBaseURL(event.target.value);
+            setClickValidation(false);
+            setSettingsValid(false);
           }}
         />
         <TextField
@@ -65,6 +68,8 @@ export default function Settings(props: SettingsProps) {
           defaultValue={apiKey}
           onChange={(event) => {
             setApiKey(event.target.value);
+            setClickValidation(false);
+            setSettingsValid(false);
           }}
         />
         <Box sx={{ display: 'flex' }}>
@@ -74,7 +79,11 @@ export default function Settings(props: SettingsProps) {
             // sx={{ mt: 3, mb: 2, mr: 2 }}
             onClick={handleTest}
           >
-            {settingsValid ? 'Valid.' : 'Test'}
+            {settingsValid
+              ? 'Valid.'
+              : clickValidation
+              ? 'Invalid URL or Key, try again'
+              : 'Test Now'}
           </Button>
           <Button
             fullWidth

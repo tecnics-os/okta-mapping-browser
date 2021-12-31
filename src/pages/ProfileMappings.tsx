@@ -87,10 +87,10 @@ const ProfileMappings = () => {
       .all([sendUrl(appToOktaUrl), sendUrl(oktaToAppUrl)])
       .then(
         axios.spread((...responses) => {
-          let responseOne = responses[0];
-          let responseTwo = responses[1];
-          let appToOktaMappingData = responseOne!.data[0];
-          let oktaToAppMappingData = responseTwo!.data[0];
+          const responseOne = responses[0];
+          const responseTwo = responses[1];
+          const appToOktaMappingData = responseOne!.data[0];
+          const oktaToAppMappingData = responseTwo!.data[0];
           setAppToOktaMappingData(appToOktaMappingData);
           setOktaToAppMappingData(oktaToAppMappingData);
           setLoadedData(true);
@@ -107,11 +107,15 @@ const ProfileMappings = () => {
   }, [id2]);
 
   const onElementClick = (event: any) => {
+    const errorMessage = 'There are no attributes for mapping.';
     if (event.target.id === 'upStream') {
-      showApptoOktaMapping(appToOktaApiData);
-    }
-    if (event.target.id === 'downStream') {
-      showOktaToAppMapping(oktaToAppApiData);
+      appToOktaApiData.propertyMappings.length === 0
+        ? alert(errorMessage)
+        : showApptoOktaMapping(appToOktaApiData);
+    } else if (event.target.id === 'downStream') {
+      oktaToAppApiData.propertyMappings.length === 0
+        ? alert(errorMessage)
+        : showOktaToAppMapping(oktaToAppApiData);
     }
   };
 

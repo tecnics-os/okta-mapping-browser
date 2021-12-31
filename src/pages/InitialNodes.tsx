@@ -60,7 +60,7 @@ const InitialNodes = () => {
   );
 
   const onElementClick = () => {
-    alert('Please select any application for viewing the mapping.');
+    alert('Goto Settings and enter Base URL and API Key.');
   };
 
   return (

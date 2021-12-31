@@ -110,10 +110,10 @@ const SideBar = (props: SideBarProps) => {
       ])
       .then(
         axios.spread((...responses) => {
-          let responseOne = responses[0];
-          let responseTwo = responses[1];
-          let defaultId = responseOne!.data[0].id;
-          let appData = responseTwo!.data;
+          const responseOne = responses[0];
+          const responseTwo = responses[1];
+          const defaultId = responseOne!.data[0].id;
+          const appData = responseTwo!.data;
           setUserProfileTemplateId(defaultId);
           setListOfApps(appData);
           setLoadedData(true);
@@ -138,7 +138,7 @@ const SideBar = (props: SideBarProps) => {
 
   const pushAppNames = () => {
     let apiData: any = [];
-    Object.keys(appsData).forEach((item: any, index: any) => {
+    appsData.forEach((item: any, index: any) => {
       apiData.push(
         <>
           <Divider />
@@ -153,16 +153,16 @@ const SideBar = (props: SideBarProps) => {
                 className="appLogo"
                 height="12px"
                 width="auto"
-                src={appsData[index]._embedded.appLogo.href}
+                src={item._embedded.appLogo.href}
               />
               <ListItemText
-                primary={appsData[index].displayName}
+                primary={item.displayName}
                 onClick={() => {
                   redirect(
                     userProfileTemplateId,
-                    appsData[index].id,
-                    appsData[index].displayName,
-                    appsData[index]._embedded.appLogo.href
+                    item.id,
+                    item.displayName,
+                    item._embedded.appLogo.href
                   );
                 }}
               />
