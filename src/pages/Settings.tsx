@@ -19,19 +19,26 @@ export default function Settings(props: SettingsProps) {
   const [apiKey, setApiKey] = useState(
     localStorage.getItem(WS_OKTA_API_TOKEN_KEY) ?? ''
   );
+  const [clickValidation, setClickValidation] = React.useState<any>(false);
 
   const handleTest = async (event: React.MouseEvent<HTMLButtonElement>) => {
     const status = await testApi(baseURL, apiKey);
     setSettingsValid(status);
+    setClickValidation(true);
   };
 
-  const handleSave = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    const status = await testApi(baseURL, apiKey);
-    if (status) {
+  const handleSave: any = () => {
+    // const status = await testApi(baseURL, apiKey);
+    if (settingsValid) {
       localStorage.setItem(WS_OKTA_BASE_URL_KEY, baseURL);
       localStorage.setItem(WS_OKTA_API_TOKEN_KEY, apiKey);
       localStorage.setItem(WS_OKTA_SETTINGS_VALID, 'true');
     }
+  };
+
+  const handleRefresh = () => {
+    window.localStorage.clear();
+    window.location.reload();
   };
 
   return (
@@ -41,12 +48,14 @@ export default function Settings(props: SettingsProps) {
           margin="normal"
           required
           fullWidth
-          id="oktatenent"
-          label="Okta Tenent"
+          id="oktatenant"
+          label="Okta Tenant base URL"
           name="oktatenent"
           defaultValue={baseURL}
           onChange={(event) => {
             setBaseURL(event.target.value);
+            setClickValidation(false);
+            setSettingsValid(false);
           }}
         />
         <TextField
@@ -59,6 +68,8 @@ export default function Settings(props: SettingsProps) {
           defaultValue={apiKey}
           onChange={(event) => {
             setApiKey(event.target.value);
+            setClickValidation(false);
+            setSettingsValid(false);
           }}
         />
         <Box sx={{ display: 'flex' }}>
@@ -68,7 +79,11 @@ export default function Settings(props: SettingsProps) {
             // sx={{ mt: 3, mb: 2, mr: 2 }}
             onClick={handleTest}
           >
-            {settingsValid ? 'Valid.' : 'Test'}
+            {settingsValid
+              ? 'Valid.'
+              : clickValidation
+              ? 'Invalid URL or Key, try again'
+              : 'Test Now'}
           </Button>
           <Button
             fullWidth
@@ -76,9 +91,20 @@ export default function Settings(props: SettingsProps) {
             variant="contained"
             // sx={{ mt: 3, mb: 2 }}
             disabled={!settingsValid}
-            onClick={handleSave}
+            onClick={() => {
+              handleSave();
+              window.location.reload();
+            }}
           >
             Save
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            type="submit"
+            onClick={handleRefresh}
+          >
+            New Okta tenant
           </Button>
         </Box>
       </Box>
