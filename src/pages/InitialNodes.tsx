@@ -9,7 +9,7 @@ import ReactFlow from 'react-flow-renderer';
 const customNodeStyles: any = {
   overflow: 'hidden',
   width: '10000px',
-  height: '1500px',
+  height: '650px',
 };
 
 const InitialNodes = () => {

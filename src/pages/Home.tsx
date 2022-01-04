@@ -15,42 +15,37 @@ const useStyles = makeStyles(() => ({
     flexGrow: 1,
     flexDirection: 'column',
     height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }));
 const Home = (props: HomeProps) => {
   const [open, setOpen] = React.useState(true);
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
+  const toggleDrawer = () => {
+    setOpen(!open);
   };
 
   const classes = useStyles();
   return (
-    <Grid container className={classes.root}>
-      <Grid item>
-        <AppHeader
-          appTheme={props.appTheme}
-          handleThemeChange={props.handleThemeChange}
-        />
-      </Grid>
-      <Grid item>
-        <Grid container>
-          <Grid item>
-            <FixedIconMenu onClickAppsIcon={handleDrawerOpen} />
-          </Grid>
-          <Grid item>
-            <SideBar open={open} handleDrawerClose={handleDrawerClose} />
-          </Grid>
-          <Grid item>
-            <Main />
-          </Grid>
+    <>
+      <AppHeader
+        appTheme={props.appTheme}
+        handleThemeChange={props.handleThemeChange}
+      />
+      <Grid container className={classes.root}>
+        {/* <Grid item>
+          <FixedIconMenu onClickAppsIcon={handleDrawerOpen} />
+        </Grid> */}
+        <Grid item>
+          <SideBar open={open} toggleDrawer={toggleDrawer} />
+        </Grid>
+        <Grid item>
+          <Main />
         </Grid>
       </Grid>
-    </Grid>
+    </>
   );
 };
 

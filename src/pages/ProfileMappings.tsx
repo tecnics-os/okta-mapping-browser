@@ -9,7 +9,7 @@ import { request } from '../Request';
 const customNodeStyles: any = {
   overflow: 'hidden',
   width: '10000px',
-  height: '1500px',
+  height: '650px',
 };
 
 const ProfileMappings = () => {

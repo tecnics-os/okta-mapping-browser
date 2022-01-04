@@ -13,9 +13,10 @@ import axios from 'axios';
 import * as dotenv from 'dotenv';
 import { useHistory } from 'react-router-dom';
 import { request } from '../Request';
+import { ListItemIcon } from '@material-ui/core';
 interface SideBarProps {
-  open: boolean;
-  handleDrawerClose: any;
+  open: any;
+  toggleDrawer: any;
 }
 
 const drawerWidth = 240;
@@ -53,7 +54,7 @@ const useStyles = makeStyles((theme) => ({
   drawerOpen: {
     width: drawerWidth,
     top: '48px',
-    left: '64px',
+    left: '0px',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -61,15 +62,15 @@ const useStyles = makeStyles((theme) => ({
   },
   drawerClose: {
     top: '48px',
-    left: '64px',
+    left: '0px',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
     overflowX: 'hidden',
-    width: 0,
+    width: `calc(${theme.spacing(7)}px + 1px)`,
     [theme.breakpoints.up('sm')]: {
-      width: 0,
+      width: `calc(${theme.spacing(9)} + 1px)`,
     },
   },
   toolbar: {
@@ -140,21 +141,24 @@ const SideBar = (props: SideBarProps) => {
     let apiData: any = [];
     appsData.forEach((item: any, index: any) => {
       apiData.push(
-        <>
+        <div key={index}>
           <Divider />
           <List>
-            <ListItem button>
-              <img
-                style={{
-                  position: 'sticky',
-                  left: '1px',
-                  top: '0px',
-                }}
-                className="appLogo"
-                height="12px"
-                width="auto"
-                src={item._embedded.appLogo.href}
-              />
+            <ListItem button key={item.displayName}>
+              <ListItemIcon>
+                <img
+                  style={{
+                    position: 'sticky',
+                    left: '1px',
+                    top: '0px',
+                  }}
+                  className="appLogo"
+                  height="12px"
+                  width="auto"
+                  src={item._embedded.appLogo.href}
+                />
+              </ListItemIcon>
+
               <ListItemText
                 primary={item.displayName}
                 onClick={() => {
@@ -169,7 +173,7 @@ const SideBar = (props: SideBarProps) => {
             </ListItem>
           </List>
           <Divider />
-        </>
+        </div>
       );
     });
     return apiData;
@@ -192,12 +196,8 @@ const SideBar = (props: SideBarProps) => {
           }}
         >
           <div className={classes.toolbar}>
-            <IconButton onClick={props.handleDrawerClose}>
-              {theme.direction === 'rtl' ? (
-                <ChevronRightIcon />
-              ) : (
-                <ChevronLeftIcon />
-              )}
+            <IconButton onClick={props.toggleDrawer}>
+              {props.open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
             </IconButton>
           </div>
           {pushAppNames()}
