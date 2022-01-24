@@ -4,11 +4,6 @@ import ReactFlow from 'react-flow-renderer';
 import { useParams } from 'react-router-dom';
 import oktaLogo from '../../assets/okta-logo.png';
 import { request } from '../Request';
-// import SearchBar from './SearchBar';
-// import MappingList from './MappingSearchResults';
-// import SearchField from 'react-search-field';
-
-// import { WS_OKTA_API_TOKEN_KEY, WS_OKTA_BASE_URL_KEY } from '../constants';
 
 const customNodeStyles: any = {
   overflow: 'hidden',
@@ -17,53 +12,37 @@ const customNodeStyles: any = {
 };
 
 const ProfileMappings = () => {
-  let { id1 = '', id2 = '', label = '', logo = '', appsList = {} } = {
+  let { id1 = '', id2 = '', label = '', logo = '' } = {
     ...useParams(),
   };
   const appLogo = decodeURIComponent(logo);
 
-  console.log(appsList);
-
-  const initialElements = [
+  let initialElements = [
     {
       id: 'appTitle',
       sourcePosition: 'right',
       targetPosition: 'left',
-      type: 'input',
-      data: { label: 'Profile Mappings' },
-      position: { x: 20, y: 200 },
+      type: 'default',
+      data: { label: <div>{label}</div> },
+      position: { x: 200, y: 200 },
     },
     {
-      id: 'appToOkta',
+      id: 'oktaApp',
       sourcePosition: 'right',
       targetPosition: 'left',
       type: 'default',
       data: {
-        label: (
-          <div id="upStream" className="downStream">
-            {label} to Okta user
-          </div>
-        ),
+        label: <div>Okta</div>,
       },
-      position: { x: 270, y: 80 },
+      position: { x: 500, y: 200 },
     },
     {
-      id: 'oktaToApp',
-      sourcePosition: 'right',
-      targetPosition: 'left',
-      type: 'default',
-      data: {
-        label: (
-          <div id="downStream" className="downStream">
-            Okta user to {label}
-          </div>
-        ),
-      },
-      position: { x: 270, y: 320 },
-      overflow: 'hidden',
+      id: 'arrow1',
+      source: 'appTitle',
+      target: `oktaApp`,
+      animated: true,
+      label: 'mappings',
     },
-    { id: 'arrow1', source: 'appTitle', target: `appToOkta`, animated: true },
-    { id: 'arrow2', source: 'appTitle', target: `oktaToApp`, animated: true },
   ];
 
   const [attributeMapping, setAttributeMapping] = useState<any>(
@@ -77,9 +56,9 @@ const ProfileMappings = () => {
     {}
   );
   const [loadedData, setLoadedData] = React.useState<boolean>(false);
-  // const [input, setInput] = useState('');
-  // const [mappingList, setMappingList] = React.useState<any>();
-  // const [mappingListDefault, setMappingListDefault] = React.useState<any>();
+  const [userProfileTemplateId, setUserProfileTemplateId] = useState<any>('');
+  const [listOfApps, setListOfApps] = useState<any>([]);
+  const appsData: any = [...listOfApps];
 
   const appToOktaApiData = { ...appToOktaMappingData };
   const oktaToAppApiData = { ...oktaToAppMappingData };
@@ -87,6 +66,104 @@ const ProfileMappings = () => {
   const sendUrl = (url: string) => {
     return request(url);
   };
+
+  const mappingNodes = [
+    {
+      id: 'pmToOkta',
+      sourcePosition: 'right',
+      targetPosition: 'left',
+      type: 'default',
+      data: { label: <div>{label} to Okta</div> },
+      position: { x: 500, y: 400 },
+    },
+    {
+      id: 'oktaToPm',
+      sourcePosition: 'right',
+      targetPosition: 'left',
+      type: 'default',
+      data: {
+        label: <div>Okta to {label}</div>,
+      },
+      position: { x: 500, y: 600 },
+    },
+    {
+      id: 'pmToOktaEdge',
+      source: 'appTitle',
+      target: `pmToOkta`,
+      animated: true,
+    },
+    {
+      id: 'oktaToPmEdge',
+      source: 'appTitle',
+      target: `oktaToPm`,
+      animated: true,
+    },
+  ];
+
+  const getProfileTemplateAndAppIds = () => {
+    let baseUrl = `/api/v1/user/types`;
+    axios
+      .all([
+        sendUrl(baseUrl),
+        sendUrl(`/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`),
+      ])
+      .then(
+        axios.spread((...responses) => {
+          const responseOne = responses[0];
+          const responseTwo = responses[1];
+          const defaultId = responseOne!.data[0].id;
+          const appData = responseTwo!.data;
+          setUserProfileTemplateId(defaultId);
+          setListOfApps(appData);
+          setLoadedData(true);
+          //   getAppNames(appData);
+        })
+      )
+      //       .then(() => getAppNames())
+      .catch((errors) => {
+        console.error(errors);
+      });
+  };
+
+  const getAppNames = (data: any) => {
+    console.log(data);
+
+    let yCoordinateOfElement = 0;
+    let tempNodes: any = [...initialElements];
+    data.forEach((item: any, position: number) => {
+      console.log(item.displayName);
+      tempNodes.push(
+        {
+          id: `app-${position + 1}`,
+          sourcePosition: 'right',
+          targetPosition: 'left',
+          type: 'default',
+          data: { label: <div>{item.displayName}</div> },
+          position: {
+            x: 950,
+            y: yCoordinateOfElement += getLength(position, data),
+          },
+        },
+        {
+          id: `oktaToAppEdge-${position + 1}`,
+          source: 'oktaApp',
+          target: `app-${position + 1}`,
+          animated: true,
+          label: `mappings of ${item.displayName}`,
+        }
+      );
+    });
+    const finalElements = initialElements.concat(tempNodes);
+    console.log(finalElements);
+    setAttributeMapping(tempNodes);
+  };
+
+  useEffect(() => {
+    console.log('Hello Srinivas');
+    console.log(loadedData);
+
+    getProfileTemplateAndAppIds();
+  }, []);
 
   const getApiData = () => {
     // Authorization: 'SSWS 00Vvsg0QubATDRcwDWxpgRByqcpWJWFGcVjsDQnazX',
@@ -105,9 +182,8 @@ const ProfileMappings = () => {
           const oktaToAppMappingData = responseTwo!.data[0];
           setAppToOktaMappingData(appToOktaMappingData);
           setOktaToAppMappingData(oktaToAppMappingData);
-          // setMappingList(appToOktaMappingData);
-          // setMappingListDefault(appToOktaMappingData);
           setLoadedData(true);
+          //   getAppNames();
         })
       )
       .catch((errors) => {
@@ -117,19 +193,45 @@ const ProfileMappings = () => {
 
   useEffect(() => {
     setAttributeMapping(initialElements);
+    //     getProfileTemplateAndAppIds();
     getApiData();
   }, [id2]);
 
-  const onElementClick = (event: any) => {
+  const onElementClick = (event: any, element: any) => {
+    console.log(element.id);
+    let tempNodes: any = [...initialElements];
+    tempNodes.push(...mappingNodes);
     const errorMessage = 'There are no attributes for mapping.';
-    if (event.target.id === 'upStream') {
+    if (element.id === 'arrow1') {
+      setAttributeMapping(tempNodes);
+    } else if (element.id === 'oktaApp') {
+      getAppNames(appsData);
+    } else if (element.id === 'pmToOkta') {
       appToOktaApiData.propertyMappings.length === 0
         ? alert(errorMessage)
         : showApptoOktaMapping(appToOktaApiData);
-    } else if (event.target.id === 'downStream') {
+    } else if (element.id === 'oktaToPm') {
       oktaToAppApiData.propertyMappings.length === 0
         ? alert(errorMessage)
         : showOktaToAppMapping(oktaToAppApiData);
+    } else if (element.id.includes('oktaToAppEdge')) {
+      showMappingOfApps();
+    }
+  };
+
+  const showMappingOfApps = () => {
+    console.log(attributeMapping);
+  };
+  const getLength = (node: number, apiData: any) => {
+    //     console.log(apiData[0].displayName.length);
+    let previousNodeTextLength = 0;
+    if (node == 0) {
+      return previousNodeTextLength;
+    } else {
+      let previousNode = node - 1;
+      previousNodeTextLength = apiData[previousNode].displayName.length;
+      let currentNodeTextLength = previousNodeTextLength / 0.3;
+      return currentNodeTextLength;
     }
   };
 
@@ -148,7 +250,7 @@ const ProfileMappings = () => {
   };
 
   const showApptoOktaMapping = (apiData: any) => {
-    let tempNodes: any = [...initialElements];
+    let tempNodes: any = [...initialElements, ...mappingNodes];
     let yCoordinateOfElement = 0;
     apiData.propertyMappings.forEach((item: any, index: any) => {
       tempNodes.push(
@@ -181,7 +283,7 @@ const ProfileMappings = () => {
             ),
           },
           position: {
-            x: 600,
+            x: 800,
             y: yCoordinateOfElement += getLengthOfNodeText(index, apiData),
           },
         },
@@ -205,14 +307,14 @@ const ProfileMappings = () => {
             ),
           },
           position: {
-            x: 900,
+            x: 1000,
             y: yCoordinateOfElement += 50,
           },
           style: { borderColor: '#009CDD' },
         },
         {
           id: `user-${index + 1}`,
-          source: 'appToOkta',
+          source: 'pmToOkta',
           target: `userAttr-${index + 1}`,
           animated: true,
         },
@@ -229,7 +331,7 @@ const ProfileMappings = () => {
   };
 
   const showOktaToAppMapping = (apiData: any) => {
-    let tempNodes: any = [...initialElements];
+    let tempNodes: any = [...initialElements, ...mappingNodes];
     let yCoordinateOfElement = 0;
     apiData.propertyMappings.forEach((item: any, index: any) => {
       tempNodes.push(
@@ -246,7 +348,6 @@ const ProfileMappings = () => {
                   overflowWrap: 'break-word',
                 }}
               >
-                {/* <div className="node"> */}
                 {item.sourceExpression}
                 <img
                   style={{ position: 'absolute', right: '1px', top: '1px' }}
@@ -259,7 +360,7 @@ const ProfileMappings = () => {
             ),
           },
           position: {
-            x: 600,
+            x: 800,
             y: yCoordinateOfElement += getLengthOfNodeText(index, apiData),
           },
           style: { borderColor: '#009CDD' },
@@ -287,13 +388,13 @@ const ProfileMappings = () => {
             ),
           },
           position: {
-            x: 900,
+            x: 1000,
             y: yCoordinateOfElement += 50,
           },
         },
         {
           id: `user-${index + 1}`,
-          source: 'oktaToApp',
+          source: 'oktaToPm',
           target: `userAttr-${index + 1}`,
           animated: true,
         },
@@ -309,14 +410,6 @@ const ProfileMappings = () => {
     setAttributeMapping(tempNodes);
   };
 
-  // const updateInput: any = async (input) => {
-  //   const filtered = mappingListDefault.filter((mapping) => {
-  //     return mapping.name.toLowerCase().includes(input.toLowerCase());
-  //   });
-  //   setInput(input);
-  //   setMappingList(filtered);
-  // };
-
   return (
     <div style={customNodeStyles}>
       {loadedData && (
@@ -325,8 +418,6 @@ const ProfileMappings = () => {
           onElementClick={onElementClick}
         ></ReactFlow>
       )}
-      {/* <SearchBar {...updateInput}></SearchBar>
-      <MappingList mappingList={mappingList}></MappingList> */}
     </div>
   );
 };

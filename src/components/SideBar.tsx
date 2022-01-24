@@ -96,37 +96,84 @@ const SideBar = (props: SideBarProps) => {
   const [listOfApps, setListOfApps] = useState<any>([]);
   const [loadedData, setLoadedData] = useState<any>(false);
 
+  // console.log(listOfApps);
   const appsData: any = [...listOfApps];
 
   const sendUrl = (url: string) => {
     return request(url);
   };
 
-  const getProfileTemplateAndAppIds = () => {
-    let baseUrl = `/api/v1/user/types`;
-    axios
-      .all([
-        sendUrl(baseUrl),
-        sendUrl(`/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`),
-      ])
-      .then(
-        axios.spread((...responses) => {
-          const responseOne = responses[0];
-          const responseTwo = responses[1];
-          const defaultId = responseOne!.data[0].id;
-          const appData = responseTwo!.data;
-          setUserProfileTemplateId(defaultId);
-          setListOfApps(appData);
-          setLoadedData(true);
-        })
-      )
-      .catch((errors) => {
-        console.error(errors);
-      });
+  // const getProfileTemplateAndAppIds = () => {
+  //   let baseUrl = `/api/v1/user/types`;
+  //   axios
+  //     .all([
+  //       sendUrl(baseUrl),
+  //       sendUrl(`/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`),
+  //     ])
+  //     .then(
+  //       axios.spread((...responses) => {
+  //         const responseOne = responses[0];
+  //         const responseTwo = responses[1];
+  //         const defaultId = responseOne!.data[0].id;
+  //         const appData = responseTwo!.data;
+  //         setUserProfileTemplateId(defaultId);
+  //         setListOfApps(appData);
+  //         setLoadedData(true);
+  //       })
+  //     )
+  //     .catch((errors) => {
+  //       console.error(errors);
+  //     });
+  // };
+
+  const getDefaultUserId = () => {
+    sendUrl(`/api/v1/user/types`).then((response) => {
+      const defaultId = response!.data[1].id;
+      setUserProfileTemplateId(defaultId);
+      setLoadedData(true);
+    });
   };
 
+  const getAppsList = () => {
+    sendUrl(`/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`).then(
+      (response) => {
+        const appData = response!.data;
+        if (appData.length === 20) {
+          showMoreApps(appData);
+        } else {
+          setListOfApps(appData);
+        }
+      }
+    );
+  };
+
+  const showMoreApps = (data: any) => {
+    // console.log(data);
+    // let moreApps: Array<[]>;
+    let flag = false;
+    if (data.length % 20 === 0) {
+      sendUrl(
+        `/api/v1/apps/user/types?expand=app%2CappLogo&after=${
+          data[data.length - 1]._embedded.app.id
+        }&filter=apps&expand=app%2CappLogo`
+      ).then((response) => {
+        // moreApps = moreApps.concat(response!.data);
+        data = [...data, ...(response!.data ? response!.data : [])];
+        showMoreApps(data);
+      });
+    } else {
+      flag = true;
+    }
+    if (flag) {
+      setListOfApps(data);
+    }
+  };
+  // console.log(listOfApps);
+
   useEffect(() => {
-    getProfileTemplateAndAppIds();
+    getDefaultUserId();
+    getAppsList();
+    // getProfileTemplateAndAppIds();
   }, []);
 
   let history = useHistory();
@@ -137,45 +184,53 @@ const SideBar = (props: SideBarProps) => {
     history.push(`/mappings/${id1}/${id2}/${label}/${logoUrl}`);
   };
 
-  const pushAppNames = () => {
+  const pushLogoAndAppNames = () => {
     let apiData: any = [];
+    console.log('success');
+    // console.log(appsData);
     appsData.forEach((item: any, index: any) => {
-      apiData.push(
-        <div key={index}>
-          <Divider />
-          <List>
-            <ListItem button key={item.displayName}>
-              <ListItemIcon>
-                <img
-                  style={{
-                    position: 'sticky',
-                    left: '1px',
-                    top: '0px',
-                  }}
-                  className="appLogo"
-                  height="12px"
-                  width="auto"
-                  src={item._embedded.appLogo.href}
-                />
-              </ListItemIcon>
+      item._embedded.app.features.forEach((feature: any) => {
+        if (feature === 'PROFILE_MASTERING') {
+          apiData.push(
+            <div key={index}>
+              <Divider />
+              <List>
+                <ListItem button key={item.displayName}>
+                  <ListItemIcon>
+                    <img
+                      style={{
+                        position: 'sticky',
+                        left: '1px',
+                        top: '0px',
+                      }}
+                      className="appLogo"
+                      height="17px"
+                      width="auto"
+                      src={item._embedded.appLogo.href}
+                    />
+                  </ListItemIcon>
 
-              <ListItemText
-                primary={item.displayName}
-                onClick={() => {
-                  redirect(
-                    userProfileTemplateId,
-                    item.id,
-                    item.displayName,
-                    item._embedded.appLogo.href
-                  );
-                }}
-              />
-            </ListItem>
-          </List>
-          <Divider />
-        </div>
-      );
+                  <ListItemText
+                    primary={item.displayName}
+                    onClick={() => {
+                      redirect(
+                        userProfileTemplateId,
+                        item._embedded.app.id,
+                        item.displayName,
+                        item._embedded.appLogo.href
+                      );
+                      console.log('clicked');
+                    }}
+                  />
+                </ListItem>
+              </List>
+              <Divider />
+            </div>
+          );
+        }
+      });
     });
+
     return apiData;
   };
 
@@ -200,7 +255,7 @@ const SideBar = (props: SideBarProps) => {
               {props.open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
             </IconButton>
           </div>
-          {pushAppNames()}
+          {pushLogoAndAppNames()}
         </Drawer>
       )}
     </>

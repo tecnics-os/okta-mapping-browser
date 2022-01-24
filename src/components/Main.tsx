@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/core/styles';
 // import Apps from '../pages/Apps';
 import Settings from '../pages/Settings';
 // import UserProfileMappings from '../pages/ProfileMappings';
-import ProfileMappings from '../pages/ProfileMappings';
+import ProfileMappings from '../pages/ProfileMappings3';
 import InitialNodes from '../pages/InitialNodes';
 
 const useStyles = makeStyles(() => ({

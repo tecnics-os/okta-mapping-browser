@@ -35,6 +35,7 @@ export async function testApi(
       Authorization: `SSWS ${apiKey}`,
       Accept: 'application/json',
       'Content-Type': 'application/json',
+      'Retry-After': 3600,
     },
   })
     .then((apiResponse: AxiosResponse) => {
