@@ -6,6 +6,8 @@ import oktaLogo from '../../assets/okta-logo.png';
 import { request } from '../Request';
 import { anyTypeAnnotation } from '@babel/types';
 import { RateLimiter } from 'limiter';
+import useAppsData from './ApplicationData';
+import useMappingData from './MappingData';
 
 const customNodeStyles: any = {
   overflow: 'hidden',
@@ -17,6 +19,7 @@ const ProfileMappings = () => {
   let { id1 = '', id2 = '', label = '', logo = '' } = {
     ...useParams(),
   };
+
   const appLogo = decodeURIComponent(logo);
   const [arrowClick, setArrowClick] = React.useState<boolean>(false);
 
@@ -60,6 +63,10 @@ const ProfileMappings = () => {
   );
   const [userProfileTemplateId, setUserProfileTemplateId] = useState<any>('');
   const [listOfApps, setListOfApps] = useState<any>([]);
+  const [loadedAppData, apps] = useAppsData();
+  const [dataLoaded, downstream] = useMappingData();
+  // console.log(apps);
+  // console.log(dataLoaded);
 
   const appsData: any = [...listOfApps];
   // const appToOktaApiData = { ...appToOktaMappingData };
@@ -478,10 +485,10 @@ const ProfileMappings = () => {
 
   return (
     <div style={customNodeStyles}>
-      {loadedData && loadedMappingData && (
+      {loadedData && (
         <ReactFlow
           elements={attributeMapping}
-          onElementClick={onElementClick}
+          // onElementClick={onElementClick}
         ></ReactFlow>
       )}
     </div>
