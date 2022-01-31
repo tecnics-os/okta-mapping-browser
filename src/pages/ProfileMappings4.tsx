@@ -5,10 +5,14 @@ import oktaLogo from '../../assets/okta-logo.png';
 import { request } from '../Request';
 import useAppsData from './ApplicationData';
 import useMappingData from './MappingData';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Box from '@material-ui/core/Box';
+
+// import LoadingSpinner from '../components/LoadingSpinner';
 
 const customNodeStyles: any = {
   overflow: 'hidden',
-  width: '10000px',
+  width: '2000px',
   height: '650px',
 };
 
@@ -114,13 +118,13 @@ const ProfileMappings = () => {
       previousNodeTextLength = Object.values<any>(data)[previousNode].expression
         .length;
       let currentNodeTextLength = previousNodeTextLength / 1.1;
-      console.log(previousNodeTextLength);
+      // console.log(previousNodeTextLength);
       return currentNodeTextLength;
     }
   };
 
   const showUpstreamMapping = () => {
-    console.log(attributeMapping);
+    // console.log(attributeMapping);
     //     let tempNodes: any = [...attributeMapping];
     let tempNodes: any = [];
     //     let permanentNodes: any = [...attributeMapping];
@@ -301,7 +305,6 @@ const ProfileMappings = () => {
   }, [id2]);
 
   useEffect(() => {
-    console.log(initialPosition);
     showUpstreamMapping();
   }, [initialPosition]);
 
@@ -317,6 +320,8 @@ const ProfileMappings = () => {
     mapAllAppsFromOkta();
   }, [appsLoaded]);
 
+  console.log(mapsLoaded);
+
   const onElementClick = (event: any, element: any) => {
     if (element.id === 'arrow1') {
       showUpstreamMapping();
@@ -326,18 +331,28 @@ const ProfileMappings = () => {
       let appNumber = element.id.split('-')[1];
       showDownstreamMapping(appName, appNumber, yCoordinate);
       setInitialPosition(yCoordinate);
-      console.log(initialPosition);
+      // console.log(initialPosition);
       setAppNumber(appNumber);
     }
   };
 
   return (
     <div style={customNodeStyles}>
-      {mapsLoaded && (
+      {mapsLoaded ? (
         <ReactFlow
           elements={[...attributeMapping, ...appMapping]}
           onElementClick={onElementClick}
         ></ReactFlow>
+      ) : (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <CircularProgress />
+        </Box>
       )}
     </div>
   );

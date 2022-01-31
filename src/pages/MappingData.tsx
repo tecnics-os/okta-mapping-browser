@@ -15,6 +15,17 @@ const useMappingData = () => {
   );
   const [loadedAppData, listOfApps] = useAppsData();
 
+  useEffect(() => {
+    tempName();
+    console.log(loadedMappingData);
+  }, [downstreamMapping]);
+
+  useEffect(() => {
+    getDefaultUserId();
+    //     getUserId();
+    getDownstreamMappingsData();
+  }, [loadedAppData, loadedMappingData]);
+
   //   console.log(loadedAppData);
   //   console.log(listOfApps);
 
@@ -56,8 +67,7 @@ const useMappingData = () => {
         });
       })
       .then(() => {
-        console.log('KoiAurRandomText');
-
+        tempName();
         setDownstreamMapping(downstreamMappingData);
       });
   };
@@ -65,18 +75,6 @@ const useMappingData = () => {
   const tempName = () => {
     setLoadedMappingData(true);
   };
-
-  useEffect(() => {
-    tempName();
-    console.log(loadedMappingData);
-    console.log('randomText');
-  }, [downstreamMapping]);
-
-  useEffect(() => {
-    getDefaultUserId();
-    //     getUserId();
-    getDownstreamMappingsData();
-  }, [loadedAppData, loadedMappingData]);
 
   return [loadedMappingData, downstreamMapping];
 };

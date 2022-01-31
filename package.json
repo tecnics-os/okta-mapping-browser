@@ -172,6 +172,7 @@
     "@babel/preset-react": "^7.12.7",
     "@babel/preset-typescript": "^7.12.7",
     "@babel/register": "^7.12.1",
+    "@emotion/babel-plugin": "^11.7.2",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@teamsupercell/typings-for-css-modules-loader": "^2.4.0",
     "@testing-library/jest-dom": "^5.11.6",
@@ -262,6 +263,7 @@
     "react-flow-renderer": "^9.7.1",
     "react-router-dom": "^5.2.0",
     "react-search-field": "^2.0.1",
+    "react-spinners": "^0.11.0",
     "regenerator-runtime": "^0.13.5",
     "source-map-support": "^0.5.19",
     "superagent": "^6.1.0"
