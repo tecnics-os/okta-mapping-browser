@@ -4,9 +4,10 @@ import { makeStyles } from '@material-ui/core/styles';
 // import Apps from '../pages/Apps';
 import Settings from '../pages/Settings';
 // import UserProfileMappings from '../pages/ProfileMappings';
-import ProfileMappings from '../pages/ProfileMappings4';
+import { ProfileMappings } from '../pages/ProfileMappings4';
 import InitialNodes from '../pages/InitialNodes';
 import useAppsData from '../pages/ApplicationData';
+import AppUsers from '../pages/AppUsersData';
 // import useMappingData from '../pages/MappingData';
 
 const useStyles = makeStyles(() => ({
@@ -30,7 +31,7 @@ const Main = () => {
           path="/mappings/:id1/:id2/:label/:logo"
           component={ProfileMappings}
         />
-        {/* <Route exact path="/" component={Apps} /> */}
+        {/* <Route exact path="/users/:appId" component={AppUsers} /> */}
         {/* <Route exact path="/apps" component={Apps} /> */}
         <Route exact path="/settings" component={Settings} />
       </Switch>

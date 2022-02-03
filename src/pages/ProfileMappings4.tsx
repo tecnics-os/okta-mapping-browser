@@ -40,6 +40,28 @@ const displayTextInsideTheNode = (label, imageSource) => {
   );
 };
 
+const sendUrl = (url: string) => {
+  return request(url);
+};
+
+let dataUser: any = [];
+
+const getUsersDataOfSelectedApp = (appId) => {
+  sendUrl(`/api/v1/apps/${appId}/users?expand=skinny-user%2Ctask`).then(
+    (response) => {
+      console.log(response!.data);
+      dataUser = response!.data;
+      return response!.data;
+    }
+  );
+};
+
+const useUsersData = () => {
+  let usersData: any = dataUser;
+  useEffect(() => console.log(usersData), [dataUser]);
+  return [usersData];
+};
+
 const ProfileMappings = () => {
   let { id1 = '', id2 = '', label = '', logo = '' } = {
     ...useParams(),
@@ -58,6 +80,7 @@ const ProfileMappings = () => {
   const [appsForMapping, setAppsForMapping] = useState<any>([]);
   let [initialPosition, setInitialPosition] = useState<any>(200);
   const [appNumber, setAppNumber] = useState<any>();
+  const [usersData, setUsersData] = useState<any>([]);
 
   let initialElements = [
     {
@@ -93,9 +116,11 @@ const ProfileMappings = () => {
     initialElements
   );
 
-  const sendUrl = (url: string) => {
-    return request(url);
-  };
+  // let history = useHistory();
+
+  // const redirect = (appId: any) => {
+  //   history.push(`/users/${appId}`);
+  // };
 
   const getUpstreamMappingsData = () => {
     sendUrl(`/api/v1/mappings?sourceId=${id2}&targetId=${id1}`).then(
@@ -194,15 +219,22 @@ const ProfileMappings = () => {
     let tempNodes: any = [];
     let yCoordinateOfElement = -50;
     [...appsData].forEach((item: any, index: any) => {
+      // console.log(item._embedded.app.id);
       tempNodes.push({
         id: `app-${index + 1}`,
         sourcePosition: 'right',
         targetPosition: 'left',
         type: 'output',
         data: {
-          label: displayTextInsideTheNode(
-            item._embedded.app.label,
-            item._embedded.appLogo.href
+          label: (
+            <div
+              onClick={() => getUsersDataOfSelectedApp(item._embedded.app.id)}
+            >
+              {displayTextInsideTheNode(
+                item._embedded.app.label,
+                item._embedded.appLogo.href
+              )}
+            </div>
           ),
         },
         position: {
@@ -314,13 +346,14 @@ const ProfileMappings = () => {
       ...upstreamMapping,
       ...downstreamMapping,
     ]);
+    console.log(dataUser);
   }, [appNumber]);
 
   useEffect(() => {
     mapAllAppsFromOkta();
   }, [appsLoaded]);
 
-  console.log(mapsLoaded);
+  // console.log(mapsLoaded);
 
   const onElementClick = (event: any, element: any) => {
     if (element.id === 'arrow1') {
@@ -358,4 +391,4 @@ const ProfileMappings = () => {
   );
 };
 
-export default ProfileMappings;
+export { ProfileMappings, useUsersData };
