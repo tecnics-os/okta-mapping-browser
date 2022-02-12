@@ -37,7 +37,7 @@ const useMappingData = () => {
   };
 
   const limiter = new RateLimiter({
-    tokensPerInterval: 10,
+    tokensPerInterval: 20,
     interval: 'second',
   });
 

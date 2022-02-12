@@ -14,6 +14,7 @@ import * as dotenv from 'dotenv';
 import { useHistory } from 'react-router-dom';
 import { request } from '../Request';
 import { ListItemIcon } from '@material-ui/core';
+import useAppsData from '../pages/ApplicationData';
 interface SideBarProps {
   open: any;
   toggleDrawer: any;
@@ -93,8 +94,9 @@ const SideBar = (props: SideBarProps) => {
   const theme = useTheme();
 
   const [userProfileTemplateId, setUserProfileTemplateId] = useState<any>('');
-  const [listOfApps, setListOfApps] = useState<any>([]);
+  // const [listOfApps, setListOfApps] = useState<any>([]);
   const [loadedData, setLoadedData] = useState<any>(false);
+  const [appsLoaded, listOfApps] = useAppsData();
 
   // console.log(listOfApps);
   const appsData: any = [...listOfApps];
@@ -102,29 +104,6 @@ const SideBar = (props: SideBarProps) => {
   const sendUrl = (url: string) => {
     return request(url);
   };
-
-  // const getProfileTemplateAndAppIds = () => {
-  //   let baseUrl = `/api/v1/user/types`;
-  //   axios
-  //     .all([
-  //       sendUrl(baseUrl),
-  //       sendUrl(`/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`),
-  //     ])
-  //     .then(
-  //       axios.spread((...responses) => {
-  //         const responseOne = responses[0];
-  //         const responseTwo = responses[1];
-  //         const defaultId = responseOne!.data[0].id;
-  //         const appData = responseTwo!.data;
-  //         setUserProfileTemplateId(defaultId);
-  //         setListOfApps(appData);
-  //         setLoadedData(true);
-  //       })
-  //     )
-  //     .catch((errors) => {
-  //       console.error(errors);
-  //     });
-  // };
 
   const getDefaultUserId = () => {
     sendUrl(`/api/v1/user/types`).then((response) => {
@@ -134,45 +113,11 @@ const SideBar = (props: SideBarProps) => {
     });
   };
 
-  const getAppsList = () => {
-    sendUrl(`/api/v1/apps/user/types?expand=app%2CappLogo&category=apps`).then(
-      (response) => {
-        const appData = response!.data;
-        if (appData.length === 20) {
-          showMoreApps(appData);
-        } else {
-          setListOfApps(appData);
-        }
-      }
-    );
-  };
-
-  const showMoreApps = (data: any) => {
-    // console.log(data);
-    // let moreApps: Array<[]>;
-    let flag = false;
-    if (data.length % 20 === 0) {
-      sendUrl(
-        `/api/v1/apps/user/types?expand=app%2CappLogo&after=${
-          data[data.length - 1]._embedded.app.id
-        }&filter=apps&expand=app%2CappLogo`
-      ).then((response) => {
-        // moreApps = moreApps.concat(response!.data);
-        data = [...data, ...(response!.data ? response!.data : [])];
-        showMoreApps(data);
-      });
-    } else {
-      flag = true;
-    }
-    if (flag) {
-      setListOfApps(data);
-    }
-  };
-  // console.log(listOfApps);
-
   useEffect(() => {
     getDefaultUserId();
-    getAppsList();
+    console.log(appsData);
+    // useAppsData();
+    // getAppsList();
     // getProfileTemplateAndAppIds();
   }, []);
 
@@ -191,6 +136,7 @@ const SideBar = (props: SideBarProps) => {
     appsData.forEach((item: any, index: any) => {
       item._embedded.app.features.forEach((feature: any) => {
         if (feature === 'PROFILE_MASTERING') {
+          console.log(item.id);
           apiData.push(
             <div key={index}>
               <Divider />
@@ -219,7 +165,7 @@ const SideBar = (props: SideBarProps) => {
                         item.displayName,
                         item._embedded.appLogo.href
                       );
-                      console.log('clicked');
+                      console.log(item);
                     }}
                   />
                 </ListItem>

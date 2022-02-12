@@ -7,8 +7,8 @@ import useAppsData from './ApplicationData';
 import useMappingData from './MappingData';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Box from '@material-ui/core/Box';
-
-// import LoadingSpinner from '../components/LoadingSpinner';
+import initialElement from './InitialElements';
+import displayTextInsideTheNode from './NodeTextStyling';
 
 const customNodeStyles: any = {
   overflow: 'hidden',
@@ -16,111 +16,42 @@ const customNodeStyles: any = {
   height: '650px',
 };
 
-const displayTextInsideTheNode = (label, imageSource) => {
-  return (
-    <div
-      style={{
-        flexWrap: 'wrap',
-        overflowWrap: 'break-word',
-      }}
-    >
-      {label}
-      <img
-        style={{
-          position: 'absolute',
-          right: '1px',
-          top: '1px',
-        }}
-        className="appLogo"
-        height="13px"
-        width="auto"
-        src={imageSource}
-      />
-    </div>
-  );
-};
+let profileSourceLabel;
+let appId;
+let defaultId;
+let upstreamData;
 
 const sendUrl = (url: string) => {
   return request(url);
-};
-
-let dataUser: any = [];
-
-const getUsersDataOfSelectedApp = (appId) => {
-  sendUrl(`/api/v1/apps/${appId}/users?expand=skinny-user%2Ctask`).then(
-    (response) => {
-      console.log(response!.data);
-      dataUser = response!.data;
-      return response!.data;
-    }
-  );
-};
-
-const useUsersData = () => {
-  let usersData: any = dataUser;
-  useEffect(() => console.log(usersData), [dataUser]);
-  return [usersData];
 };
 
 const ProfileMappings = () => {
   let { id1 = '', id2 = '', label = '', logo = '' } = {
     ...useParams(),
   };
-  const appLogo = decodeURIComponent(logo);
 
-  const defaultLabel = 'Okta';
+  profileSourceLabel = label;
+  appId = id2;
+
+  const appLogo = decodeURIComponent(logo);
 
   const [upstreamMappingData, setUpstreamMappingData] = React.useState<any>({});
   const [appMapping, setAppMapping] = useState<any>([]);
-  const [disabled, setDisabled] = useState(false);
+  // const [disabled, setDisabled] = useState(false);
   const [appsLoaded, appsData] = useAppsData();
   const [mapsLoaded, downstreamMappingData] = useMappingData();
   const [upstreamMapping, setUpstreamMapping] = useState<any>([]);
   const [downstreamMapping, setDownstreamMapping] = useState<any>([]);
-  const [appsForMapping, setAppsForMapping] = useState<any>([]);
-  let [initialPosition, setInitialPosition] = useState<any>(200);
+  // const [appsForMapping, setAppsForMapping] = useState<any>([]);
   const [appNumber, setAppNumber] = useState<any>();
-  const [usersData, setUsersData] = useState<any>([]);
+  // const [usersData, setUsersData] = useState<any>([]);
+  let [initialPosition, setInitialPosition] = useState<any>(200);
 
-  let initialElements = [
-    {
-      id: 'appTitle',
-      sourcePosition: 'right',
-      targetPosition: 'left',
-      type: 'input',
-      data: {
-        label: displayTextInsideTheNode(label, appLogo),
-      },
-      position: { x: 200, y: initialPosition },
-    },
-    {
-      id: 'oktaApp',
-      sourcePosition: 'right',
-      targetPosition: 'left',
-      type: 'default',
-      data: {
-        label: displayTextInsideTheNode(defaultLabel, oktaLogo),
-      },
-      position: { x: 900, y: initialPosition },
-    },
-    {
-      id: 'arrow1',
-      source: 'appTitle',
-      target: `oktaApp`,
-      animated: true,
-      label: 'mappings',
-    },
-  ];
+  let initialElements = initialElement(appLogo, label, initialPosition);
 
   const [attributeMapping, setAttributeMapping] = useState<any>(
     initialElements
   );
-
-  // let history = useHistory();
-
-  // const redirect = (appId: any) => {
-  //   history.push(`/users/${appId}`);
-  // };
 
   const getUpstreamMappingsData = () => {
     sendUrl(`/api/v1/mappings?sourceId=${id2}&targetId=${id1}`).then(
@@ -148,11 +79,10 @@ const ProfileMappings = () => {
     }
   };
 
+  upstreamData = upstreamMappingData;
+
   const showUpstreamMapping = () => {
-    // console.log(attributeMapping);
-    //     let tempNodes: any = [...attributeMapping];
     let tempNodes: any = [];
-    //     let permanentNodes: any = [...attributeMapping];
     let yCoordinateOfElement = initialPosition - 150;
     let mappingData = { ...upstreamMappingData };
     Object.keys(mappingData).forEach((item: any, index: any) => {
@@ -226,15 +156,9 @@ const ProfileMappings = () => {
         targetPosition: 'left',
         type: 'output',
         data: {
-          label: (
-            <div
-              onClick={() => getUsersDataOfSelectedApp(item._embedded.app.id)}
-            >
-              {displayTextInsideTheNode(
-                item._embedded.app.label,
-                item._embedded.appLogo.href
-              )}
-            </div>
+          label: displayTextInsideTheNode(
+            item._embedded.app.label,
+            item._embedded.appLogo.href
           ),
         },
         position: {
@@ -346,7 +270,6 @@ const ProfileMappings = () => {
       ...upstreamMapping,
       ...downstreamMapping,
     ]);
-    console.log(dataUser);
   }, [appNumber]);
 
   useEffect(() => {
@@ -391,4 +314,13 @@ const ProfileMappings = () => {
   );
 };
 
-export { ProfileMappings, useUsersData };
+const useProfileSourceLabel = () => {
+  // console.log(profileSourceLabel);
+  // console.log(appId);
+
+  useEffect(() => console.log(profileSourceLabel), [appId]);
+
+  return [profileSourceLabel, defaultId, appId, upstreamData];
+};
+
+export { ProfileMappings, useProfileSourceLabel };

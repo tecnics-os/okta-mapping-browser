@@ -1,5 +1,5 @@
 import { Box, Button, Paper, TextField } from '@material-ui/core';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { testApi } from '../api/oktapi';
 import {
   WS_OKTA_API_TOKEN_KEY,
@@ -40,6 +40,10 @@ export default function Settings(props: SettingsProps) {
     window.localStorage.clear();
     window.location.reload();
   };
+
+  // useEffect(() => {
+  //   window.location.reload();
+  // }, []);
 
   return (
     <Paper>
