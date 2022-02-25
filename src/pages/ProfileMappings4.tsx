@@ -9,6 +9,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Box from '@material-ui/core/Box';
 import initialElement from './InitialElements';
 import displayTextInsideTheNode from './NodeTextStyling';
+import ProfileSources from './ProfileSources';
 
 const customNodeStyles: any = {
   overflow: 'hidden',
@@ -20,49 +21,79 @@ let profileSourceLabel;
 let appId;
 let defaultId;
 let upstreamData;
+let profileSourceLogo;
+let nodeId;
 
 const sendUrl = (url: string) => {
   return request(url);
 };
 
 const ProfileMappings = () => {
-  let { id1 = '', id2 = '', label = '', logo = '' } = {
+  let { defaultUserId = '', id2 = '', label = '', logo = '', nodeId = '' } = {
     ...useParams(),
   };
+
+  // console.log(defaultUserId);
 
   profileSourceLabel = label;
   appId = id2;
 
   const appLogo = decodeURIComponent(logo);
+  profileSourceLogo = appLogo;
 
   const [upstreamMappingData, setUpstreamMappingData] = React.useState<any>({});
   const [appMapping, setAppMapping] = useState<any>([]);
-  // const [disabled, setDisabled] = useState(false);
+  const [clicked, setClicked] = useState(false);
   const [appsLoaded, appsData] = useAppsData();
   const [mapsLoaded, downstreamMappingData] = useMappingData();
   const [upstreamMapping, setUpstreamMapping] = useState<any>([]);
   const [downstreamMapping, setDownstreamMapping] = useState<any>([]);
   // const [appsForMapping, setAppsForMapping] = useState<any>([]);
   const [appNumber, setAppNumber] = useState<any>();
-  // const [usersData, setUsersData] = useState<any>([]);
-  let [initialPosition, setInitialPosition] = useState<any>(200);
+  const [profileSourceId, setProfileSourceId] = useState<any>('');
+  let [initialPosition, setInitialPosition] = useState<any>(100);
 
-  let initialElements = initialElement(appLogo, label, initialPosition);
+  const [
+    profileSources,
+    loadedProfileSources,
+    profileSourcesData,
+  ] = ProfileSources(initialPosition - 150);
+
+  let initialElements = [
+    // {
+    //   id: 'arrow1',
+    //   source: `${profileSourceId}` === '' ? `${nodeId}` : `${profileSourceId}`,
+    //   target: `oktaApp`,
+    //   animated: true,
+    //   label: 'mappings',
+    // },
+    {
+      id: 'oktaApp',
+      sourcePosition: 'right',
+      targetPosition: 'left',
+      type: 'default',
+      data: {
+        label: displayTextInsideTheNode('Okta', oktaLogo),
+      },
+      position: { x: 900, y: initialPosition },
+    },
+  ];
 
   const [attributeMapping, setAttributeMapping] = useState<any>(
     initialElements
   );
 
-  const getUpstreamMappingsData = () => {
-    sendUrl(`/api/v1/mappings?sourceId=${id2}&targetId=${id1}`).then(
-      (response) => {
-        let mappingId = response!.data[0].id;
-        sendUrl(`/api/v1/mappings/${mappingId}`).then((response) => {
-          const mappingData = response!.data.properties;
-          setUpstreamMappingData(mappingData);
-        });
-      }
-    );
+  const getUpstreamMappingsData = (appId) => {
+    // console.log(defaultUserId);
+    sendUrl(
+      `/api/v1/mappings?sourceId=${appId}&targetId=${defaultUserId}`
+    ).then((response) => {
+      let mappingId = response!.data[0].id;
+      sendUrl(`/api/v1/mappings/${mappingId}`).then((response) => {
+        const mappingData = response!.data.properties;
+        setUpstreamMappingData(mappingData);
+      });
+    });
   };
 
   const getMappingNodeTextLength = (node: number, data: any) => {
@@ -83,7 +114,7 @@ const ProfileMappings = () => {
 
   const showUpstreamMapping = () => {
     let tempNodes: any = [];
-    let yCoordinateOfElement = initialPosition - 150;
+    let yCoordinateOfElement = initialPosition - 50;
     let mappingData = { ...upstreamMappingData };
     Object.keys(mappingData).forEach((item: any, index: any) => {
       tempNodes.push(
@@ -122,7 +153,9 @@ const ProfileMappings = () => {
         },
         {
           id: `pmToApp-${index + 1}`,
-          source: 'appTitle',
+          // source: 'appTitle',
+          source:
+            `${profileSourceId}` === '' ? `${nodeId}` : `${profileSourceId}`,
           target: `userAttr-${index + 1}`,
           animated: true,
         },
@@ -256,13 +289,18 @@ const ProfileMappings = () => {
   };
 
   useEffect(() => {
-    getUpstreamMappingsData();
-    setAttributeMapping([...initialElements]);
-  }, [id2]);
+    showUpstreamMapping();
+  }, [upstreamMappingData, initialPosition]);
 
   useEffect(() => {
+    setAttributeMapping([...initialElements]);
+    getUpstreamMappingsData(id2);
     showUpstreamMapping();
-  }, [initialPosition]);
+  }, [id2]);
+
+  // useEffect(() => {
+  //   getInitialNodes(profileSourceId);
+  // }, [profileSourceId]);
 
   useEffect(() => {
     setAttributeMapping([
@@ -274,7 +312,7 @@ const ProfileMappings = () => {
 
   useEffect(() => {
     mapAllAppsFromOkta();
-  }, [appsLoaded]);
+  }, [appsLoaded, clicked]);
 
   // console.log(mapsLoaded);
 
@@ -287,28 +325,31 @@ const ProfileMappings = () => {
       let appNumber = element.id.split('-')[1];
       showDownstreamMapping(appName, appNumber, yCoordinate);
       setInitialPosition(yCoordinate);
-      // console.log(initialPosition);
       setAppNumber(appNumber);
+      setClicked(true);
+    } else if (element.id.split('-')[0] === 'profileSource') {
+      let id = element.id;
+      gotoUpstreamMapping(event.srcElement.innerText);
+      setProfileSourceId(id);
     }
+  };
+
+  const gotoUpstreamMapping = (appName) => {
+    [...profileSourcesData].map((item) => {
+      if (appName === item._embedded.app.label) {
+        console.log(item._embedded.app.id);
+        getUpstreamMappingsData(item._embedded.app.id);
+      }
+    });
   };
 
   return (
     <div style={customNodeStyles}>
-      {mapsLoaded ? (
+      {mapsLoaded && loadedProfileSources && (
         <ReactFlow
-          elements={[...attributeMapping, ...appMapping]}
+          elements={[...attributeMapping, ...appMapping, ...profileSources]}
           onElementClick={onElementClick}
         ></ReactFlow>
-      ) : (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <CircularProgress />
-        </Box>
       )}
     </div>
   );
@@ -320,7 +361,14 @@ const useProfileSourceLabel = () => {
 
   useEffect(() => console.log(profileSourceLabel), [appId]);
 
-  return [profileSourceLabel, defaultId, appId, upstreamData];
+  return [
+    profileSourceLabel,
+    defaultId,
+    appId,
+    upstreamData,
+    profileSourceLogo,
+    nodeId,
+  ];
 };
 
 export { ProfileMappings, useProfileSourceLabel };

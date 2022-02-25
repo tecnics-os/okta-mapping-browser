@@ -263,9 +263,9 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-flow-renderer": "^9.7.1",
+    "react-loading-icons": "^1.0.8",
     "react-router-dom": "^5.2.0",
     "react-search-field": "^2.0.1",
-    "react-spinners": "^0.11.0",
     "regenerator-runtime": "^0.13.5",
     "source-map-support": "^0.5.19",
     "superagent": "^6.1.0"

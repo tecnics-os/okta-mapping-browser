@@ -1,6 +1,7 @@
 import React from 'react';
 import oktaLogo from '../../assets/okta-logo.png';
 import { useProfileSourceLabel } from './ProfileMappings4';
+import ProfileSources from './ProfileSources';
 
 const displayTextInsideTheNode = (label, imageSource) => {
   return (

@@ -11,6 +11,7 @@ import {
 import InitialNodes from '../pages/InitialNodes';
 import AppHeader from './AppHeader';
 import mappingOfUser from '../pages/MappingOfUser';
+import ProfileSources from '../pages/ProfileSources';
 // import AppUsers from '../pages/OktaUsersData';
 // import useMappingData from '../pages/MappingData';
 
@@ -28,11 +29,11 @@ const Main = () => {
     <div className={classes.root}>
       <Switch>
         <Route exact path="/" component={InitialNodes} />
-        <Route exact path="/" component={AppHeader} />
-        {/* <Route exact path="/" component={useMappingData} /> */}
+        {/* <Route exact path="/" component={AppHeader} /> */}
+        {/* <Route exact path="/" component={ProfileSources} /> */}
         <Route
           exact
-          path="/mappings/:id1/:id2/:label/:logo"
+          path="/mappings/:defaultUserId/:id2/:label/:logo/:nodeId"
           component={ProfileMappings}
         />
         <Route exact path="/mappings/:userId" component={mappingOfUser} />

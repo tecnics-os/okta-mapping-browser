@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import { getAppCacheDir } from 'electron-updater/out/AppAdapter';
+import React, { useState, useEffect } from 'react';
 import ReactFlow from 'react-flow-renderer';
-import initialElement from './InitialElements';
-import adLogo from '../../assets/ad-logo.png';
+import { request } from '../Request';
+// import initialElement from './InitialElements';
+// import adLogo from '../../assets/ad-logo.png';
+import ProfileSources from './ProfileSources';
+import { useHistory } from 'react-router-dom';
 
 const customNodeStyles: any = {
   overflow: 'hidden',
@@ -9,27 +13,79 @@ const customNodeStyles: any = {
   height: '650px',
 };
 
+const sendUrl = (url: string) => {
+  return request(url);
+};
+
 const InitialNodes = () => {
-  const adLabel = 'Profile Master';
+  // const adLabel = 'Profile Master';
+  // const initialElements = initialElement(adLogo, adLabel, 300);
+  const [userProfileTemplateId, setUserProfileTemplateId] = useState('');
 
-  const initialElements = initialElement(adLogo, adLabel, 300);
+  const [
+    profileSources,
+    loadedProfileSources,
+    listOfProfileSources,
+  ] = ProfileSources(0);
 
-  const [attributeMapping, setAttributeMapping] = useState<any>(
-    initialElements
-  );
-
-  const onElementClick = () => {
-    alert('Goto Settings and enter Base URL and API Key.');
+  const getDefaultUserId = () => {
+    sendUrl(`/api/v1/user/types`).then((response) => {
+      const defaultId = response!.data[1].id;
+      setUserProfileTemplateId(defaultId);
+      // setLoadedData(true);
+    });
   };
+
+  let history = useHistory();
+
+  const redirect = (
+    id1: any,
+    id2: any,
+    label: any,
+    logo: string,
+    nodeId: string
+  ) => {
+    // console.log(id1, id2, label, logo, 'redirect');
+    const logoUrl = encodeURIComponent(logo);
+    history.push(`/mappings/${id1}/${id2}/${label}/${logoUrl}/${nodeId}`);
+  };
+
+  const onElementClick = (event: any, element: any) => {
+    // console.log('event', event.srcElement.innerText);
+    // console.log('element', element.id);
+    let appName = event.srcElement.innerText;
+    getAppData(appName, element.id);
+  };
+
+  const getAppData = (appName, nodeId) => {
+    // console.log(userProfileTemplateId);
+    // console.log(listOfProfileSources);
+    [...listOfProfileSources].map((item) => {
+      if (item._embedded.app.label === appName) {
+        console.log('found!', item._embedded.app.label);
+        redirect(
+          userProfileTemplateId,
+          item._embedded.app.id,
+          item._embedded.app.name,
+          item._embedded.appLogo.href,
+          nodeId
+        );
+      }
+    });
+  };
+
+  useEffect(() => {
+    getDefaultUserId();
+  }, []);
 
   return (
     <div style={customNodeStyles}>
-      {
+      {loadedProfileSources && (
         <ReactFlow
-          elements={attributeMapping}
+          elements={profileSources}
           onElementClick={onElementClick}
-        />
-      }
+        ></ReactFlow>
+      )}
     </div>
   );
 };

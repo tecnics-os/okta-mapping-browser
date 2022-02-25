@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppBar, IconButton, Toolbar, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { Brightness4, Brightness7, Settings } from '@material-ui/icons';
@@ -9,7 +9,9 @@ import useOktaUsers from '../pages/OktaUsersData';
 import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 import { useHistory } from 'react-router-dom';
-import { useProfileSourceLabel } from '../pages/ProfileMappings4';
+import { SpinningCircles } from 'react-loading-icons';
+import ProfileSources from '../pages/ProfileSources';
+import { request } from '../Request';
 
 interface AppHeaderProps {
   appTheme: boolean;
@@ -25,27 +27,64 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const sendUrl = (url: string) => {
+  return request(url);
+};
+
 const AppHeader = (props: AppHeaderProps) => {
-  const [usersData] = useOktaUsers();
+  const [usersData, usersLoaded] = useOktaUsers();
   const classes = useStyles();
-  // const [appLabel] = useProfileSourceLabel();
+  const [userId, setUserId] = useState<any>();
+  const [profileSources] = ProfileSources(0);
+  const [
+    listOfAppsAssignedToUser,
+    setListOfAppsAssignedToUser,
+  ] = React.useState<any>([]);
+  const [appsLoaded, setAppsLoaded] = useState<any>(false);
+  const [nodeId, setNodeId] = useState<any>('');
+
+  // console.log(profileSources);
   const icon = !props.appTheme ? <Brightness7 /> : <Brightness4 />;
 
-  const top100Films = [
-    { title: 'The Shawshank Redemption', year: 1994 },
-    { title: 'The Godfather', year: 1972 },
-    { title: 'The Godfather: Part II', year: 1974 },
-    { title: 'The Dark Knight', year: 2008 },
-    { title: '12 Angry Men', year: 1957 },
-    { title: "Schindler's List", year: 1993 },
-    { title: 'Pulp Fiction', year: 1994 },
-  ];
+  useEffect(() => {}, [userId]);
+
+  // useEffect(() => {
+  //   getListOfAppsAssignedToUser();
+  //   checkForProfileSourceAssignedToUser();
+  // }, [userId]);
 
   let history = useHistory();
 
   const redirect = (userId: any) => {
-    history.push(`/mappings/${userId}`);
+    history.push(`/mappings/${userId}/${nodeId}`);
   };
+
+  // const getListOfAppsAssignedToUser = () => {
+  //   sendUrl(
+  //     `/api/v1/apps?filter=user.id+eq+"${userId}"&expand=user/${userId}`
+  //   ).then((response) => {
+  //     const appsList = response!.data;
+  //     //       console.log(response!.data);
+  //     setListOfAppsAssignedToUser(appsList);
+  //     setAppsLoaded(true);
+  //   });
+  // };
+
+  // const checkForProfileSourceAssignedToUser = () => {
+  //   console.log(nodeId);
+
+  //   let profileSourceFound = false;
+  //   [...listOfAppsAssignedToUser].map((item) => {
+  //     [...profileSources].map((ps) => {
+  //       if (item.label === ps.data.label.props.children[0]) {
+  //         // console.log('Yes!');
+  //         profileSourceFound = true;
+  //         console.log(ps.id);
+  //         setNodeId(ps.id);
+  //       }
+  //     });
+  //   });
+  // };
 
   return (
     // <div className={classes.root}>
@@ -96,6 +135,7 @@ const AppHeader = (props: AppHeaderProps) => {
           }}
           onChange={(event, value) => {
             console.log(value.id);
+            setUserId(value.id);
             redirect(value.id);
           }}
           renderInput={(params) => (
@@ -109,7 +149,9 @@ const AppHeader = (props: AppHeaderProps) => {
                 ...params.InputProps,
                 type: 'search',
               }}
-            />
+            >
+              {usersLoaded ? '' : <SpinningCircles />}
+            </TextField>
           )}
         />
 
