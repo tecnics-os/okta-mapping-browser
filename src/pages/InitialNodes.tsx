@@ -17,6 +17,8 @@ const sendUrl = (url: string) => {
   return request(url);
 };
 
+const defalutBackgroundColour = 'white';
+
 const InitialNodes = () => {
   // const adLabel = 'Profile Master';
   // const initialElements = initialElement(adLogo, adLabel, 300);
@@ -26,7 +28,7 @@ const InitialNodes = () => {
     profileSources,
     loadedProfileSources,
     listOfProfileSources,
-  ] = ProfileSources(0);
+  ] = ProfileSources(0, defalutBackgroundColour);
 
   const getDefaultUserId = () => {
     sendUrl(`/api/v1/user/types`).then((response) => {
@@ -66,7 +68,7 @@ const InitialNodes = () => {
         redirect(
           userProfileTemplateId,
           item._embedded.app.id,
-          item._embedded.app.name,
+          item._embedded.app.label,
           item._embedded.appLogo.href,
           nodeId
         );

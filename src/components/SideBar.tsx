@@ -129,6 +129,8 @@ const SideBar = (props: SideBarProps) => {
     history.push(`/mappings/${id1}/${id2}/${label}/${logoUrl}`);
   };
 
+  // console.log('hello sai!');
+
   const pushLogoAndAppNames = () => {
     let apiData: any = [];
     console.log('success');

@@ -13,11 +13,12 @@ const useOktaUsers = () => {
     sendUrl(`/api/v1/users`)
       .then((response) => {
         const usersList = response!.data;
-        console.log(response!.data);
+        // console.log(response!.data);
         setListOfUsers(usersList);
-      })
-      .then(() => {
         setUsersLoaded(true);
+      })
+      .catch((error) => {
+        console.log(error);
       });
   };
 

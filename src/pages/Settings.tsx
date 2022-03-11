@@ -1,5 +1,6 @@
 import { Box, Button, Paper, TextField } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { testApi } from '../api/oktapi';
 import {
   WS_OKTA_API_TOKEN_KEY,
@@ -21,28 +22,40 @@ export default function Settings(props: SettingsProps) {
   );
   const [clickValidation, setClickValidation] = React.useState<any>(false);
 
-  const handleTest = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  let history = useHistory();
+
+  const redirect = () => {
+    history.push(`/mappings`);
+  };
+
+  const redirect1 = () => {
+    history.push('/');
+  };
+
+  const handleTest = async () => {
     const status = await testApi(baseURL, apiKey);
     setSettingsValid(status);
     setClickValidation(true);
   };
 
-  const handleSave: any = () => {
+  const handleSave = () => {
     // const status = await testApi(baseURL, apiKey);
     if (settingsValid) {
       localStorage.setItem(WS_OKTA_BASE_URL_KEY, baseURL);
       localStorage.setItem(WS_OKTA_API_TOKEN_KEY, apiKey);
       localStorage.setItem(WS_OKTA_SETTINGS_VALID, 'true');
+      redirect();
     }
   };
 
-  const handleRefresh = () => {
+  const handleNewTenant = () => {
     window.localStorage.clear();
     window.location.reload();
+    redirect1();
   };
 
   // useEffect(() => {
-  //   window.location.reload();
+  //   handleNewTenant();
   // }, []);
 
   return (
@@ -105,8 +118,11 @@ export default function Settings(props: SettingsProps) {
           <Button
             fullWidth
             variant="outlined"
-            type="submit"
-            onClick={handleRefresh}
+            // type="submit"
+            onClick={() => {
+              handleNewTenant();
+              // window.location.reload();
+            }}
           >
             New Okta tenant
           </Button>

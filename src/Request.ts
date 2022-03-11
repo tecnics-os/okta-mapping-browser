@@ -37,12 +37,20 @@ const headers = {
   },
 };
 
-export async function request(url: string, options?: any) {
-  const getResponse: AxiosResponse<any> = await axios({
-    method: 'GET',
-    url: `${baseUrl}${url}`,
-    ...headers,
-  });
-  const response: AxiosResponse<any> = checkStatus(getResponse);
-  return parseJSON(response);
+export async function request(url: string) {
+  // console.log(baseUrl);
+
+  if (baseUrl) {
+    // console.log('url', baseUrl);
+    const getResponse: AxiosResponse<any> = await axios({
+      method: 'GET',
+      url: `${baseUrl}${url}`,
+      ...headers,
+    });
+    const response: AxiosResponse<any> = checkStatus(getResponse);
+    return parseJSON(response);
+  }
+  return;
 }
+
+// baseUrl !== '' || baseUrl !== undefined || baseUrl !== null

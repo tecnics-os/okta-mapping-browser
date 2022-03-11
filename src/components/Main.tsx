@@ -28,7 +28,7 @@ const Main = () => {
   return (
     <div className={classes.root}>
       <Switch>
-        <Route exact path="/" component={InitialNodes} />
+        <Route exact path="/mappings" component={InitialNodes} />
         {/* <Route exact path="/" component={AppHeader} /> */}
         {/* <Route exact path="/" component={ProfileSources} /> */}
         <Route
@@ -36,9 +36,13 @@ const Main = () => {
           path="/mappings/:defaultUserId/:id2/:label/:logo/:nodeId"
           component={ProfileMappings}
         />
-        <Route exact path="/mappings/:userId" component={mappingOfUser} />
+        <Route
+          exact
+          path="/mappings/:userId/:userName"
+          component={mappingOfUser}
+        />
         {/* <Route exact path="/apps" component={Apps} /> */}
-        <Route exact path="/settings" component={Settings} />
+        <Route exact path="/" component={Settings} />
       </Switch>
     </div>
   );

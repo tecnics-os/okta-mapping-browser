@@ -12,6 +12,10 @@ import { useHistory } from 'react-router-dom';
 import { SpinningCircles } from 'react-loading-icons';
 import ProfileSources from '../pages/ProfileSources';
 import { request } from '../Request';
+import { CSVLink, CSVDownload } from 'react-csv';
+import GetAppIcon from '@material-ui/icons/GetApp';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+// import { useMappingData } from '../pages/MappingOfUser';
 
 interface AppHeaderProps {
   appTheme: boolean;
@@ -27,20 +31,23 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const sendUrl = (url: string) => {
-  return request(url);
-};
+// const sendUrl = (url: string) => {
+//   return request(url);
+// };
 
 const AppHeader = (props: AppHeaderProps) => {
+  // const [
+  //   profileSource,
+  //   profileSourceToOktaKeysArray,
+  //   profileSourceToOktaValuesArray,
+  //   oktaKeysArray,
+  //   oktaValuesArray,
+  //   appsArray,
+  // ] = useMappingData();
+
   const [usersData, usersLoaded] = useOktaUsers();
   const classes = useStyles();
   const [userId, setUserId] = useState<any>();
-  const [profileSources] = ProfileSources(0);
-  const [
-    listOfAppsAssignedToUser,
-    setListOfAppsAssignedToUser,
-  ] = React.useState<any>([]);
-  const [appsLoaded, setAppsLoaded] = useState<any>(false);
   const [nodeId, setNodeId] = useState<any>('');
 
   // console.log(profileSources);
@@ -48,48 +55,40 @@ const AppHeader = (props: AppHeaderProps) => {
 
   useEffect(() => {}, [userId]);
 
-  // useEffect(() => {
-  //   getListOfAppsAssignedToUser();
-  //   checkForProfileSourceAssignedToUser();
-  // }, [userId]);
+  useEffect(() => {}, [nodeId]);
+
+  // useEffect(() => {}, [
+  //   profileSource,
+  //   profileSourceToOktaKeysArray,
+  //   profileSourceToOktaValuesArray,
+  //   oktaKeysArray,
+  //   oktaValuesArray,
+  //   appsArray,
+  // ]);
+
+  // console.log(profileSource);
+  // useEffect(() => {}, [profileSource]);
 
   let history = useHistory();
 
-  const redirect = (userId: any) => {
-    history.push(`/mappings/${userId}/${nodeId}`);
+  const redirect = (userId: any, userName: any) => {
+    console.log(`/mappings/${userId}/${userName}`);
+    history.push(`/mappings/${userId}/${userName}`);
   };
 
-  // const getListOfAppsAssignedToUser = () => {
-  //   sendUrl(
-  //     `/api/v1/apps?filter=user.id+eq+"${userId}"&expand=user/${userId}`
-  //   ).then((response) => {
-  //     const appsList = response!.data;
-  //     //       console.log(response!.data);
-  //     setListOfAppsAssignedToUser(appsList);
-  //     setAppsLoaded(true);
-  //   });
-  // };
+  // const csvData = [
+  //   ['firstname', 'lastname', 'email'],
+  //   ['Ahmed', 'Tomi', 'ah@smthing.co.com'],
+  //   ['Raed', 'Labes', 'rl@smthing.co.com'],
+  //   ['Yezzi', 'Min l3b', 'ymin@cocococo.com'],
+  // ];
 
-  // const checkForProfileSourceAssignedToUser = () => {
-  //   console.log(nodeId);
-
-  //   let profileSourceFound = false;
-  //   [...listOfAppsAssignedToUser].map((item) => {
-  //     [...profileSources].map((ps) => {
-  //       if (item.label === ps.data.label.props.children[0]) {
-  //         // console.log('Yes!');
-  //         profileSourceFound = true;
-  //         console.log(ps.id);
-  //         setNodeId(ps.id);
-  //       }
-  //     });
-  //   });
-  // };
+  // const headers = ['Sai', 'Srinivas', 'Pendyala'];
 
   return (
     // <div className={classes.root}>
     <AppBar position="static" color={props.appTheme ? 'default' : 'primary'}>
-      <Toolbar variant="dense">
+      <Toolbar variant="dense" style={{ minHeight: '20px' }}>
         <Typography variant="h6" color="inherit" className={classes.title}>
           Okta Mapping Tool
         </Typography>
@@ -134,15 +133,25 @@ const AppHeader = (props: AppHeaderProps) => {
             );
           }}
           onChange={(event, value) => {
-            console.log(value.id);
+            // console.log(value.profile.firstName + value.profile.lastName);
+            let userName = value.profile.firstName + value.profile.lastName;
+            // console.log(value.id);
             setUserId(value.id);
-            redirect(value.id);
+            redirect(value.id, userName);
           }}
           renderInput={(params) => (
             <TextField
               {...params}
               label="Search User"
-              style={{ width: 320 }}
+              style={{
+                width: 320,
+                height: 55,
+                backgroundColor: props.appTheme ? '#696969' : '#0693e3',
+                borderRadius: '3px',
+                border: 'red',
+                // borderColor: props.appTheme ? '#696969' : 'lightBlue',
+              }}
+              // color={props.appTheme ? 'blue' : 'green'}
               margin="normal"
               variant="outlined"
               InputProps={{
@@ -164,12 +173,27 @@ const AppHeader = (props: AppHeaderProps) => {
         </IconButton>
         <IconButton
           component={Link}
-          to="/settings"
+          to="/"
           aria-label="settings"
           color="inherit"
         >
           <Settings />
         </IconButton>
+        {/* <button onClick={() => history.goBack()}> */}
+        <IconButton>
+          <ArrowBackIcon onClick={() => history.goBack()}></ArrowBackIcon>
+        </IconButton>
+        {/* </button> */}
+        {/* <IconButton>
+          <GetAppIcon>
+            <button onClick={() => history.goBack()}>Go Back</button>
+          </GetAppIcon>
+        </IconButton> */}
+        {/* < data={csvData} headers={headers}>
+          <IconButton>
+            <GetAppIcon></GetAppIcon>
+          </IconButton>
+        </CSVLink> */}
       </Toolbar>
     </AppBar>
     // </div>

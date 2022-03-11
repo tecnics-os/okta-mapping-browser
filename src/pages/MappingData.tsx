@@ -61,7 +61,7 @@ const useMappingData = () => {
           const mappingId = Object.values(id.data[0])[0];
           await limiter.removeTokens(1);
           // setLoadedMappingData(false);
-          console.log(loadedMappingData);
+          // console.log(loadedMappingData);
           return sendUrl(`/api/v1/mappings/${mappingId}`);
         });
         Promise.all(mappingDataOfTheApp).then((response: any) => {
@@ -84,6 +84,8 @@ const useMappingData = () => {
     //   setLoadedMappingData(true);
     // });
   };
+
+  // console.log(downstreamMapping);
 
   // const getDownstreamMappingsData = () => {
   //   let downstreamMappingData: any = [];

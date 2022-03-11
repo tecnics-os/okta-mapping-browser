@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import ReactFlow from 'react-flow-renderer';
-import { useParams } from 'react-router-dom';
+import ReactFlow, { MiniMap } from 'react-flow-renderer';
+import { useParams, useHistory } from 'react-router-dom';
 import oktaLogo from '../../assets/okta-logo.png';
 // import profileSourceLogo from '../../assets/ad-logo.png';
-import initialElement from './InitialElements';
+// import initialElement from './InitialElements';
 import { useProfileSourceLabel } from './ProfileMappings4';
 import { request } from '../Request';
 import displayTextInsideTheNode from './NodeTextStyling';
 import axios from 'axios';
 import ProfileSources from './ProfileSources';
-import { profile } from 'console';
+// import { profile } from 'console';
+import { CSVLink } from 'react-csv';
+// import { useFormControl } from '@material-ui/core';
 
 const sendUrl = (url: string) => {
   return request(url);
 };
+
+// const history = useHistory();
 
 const customNodeStyles: any = {
   overflow: 'hidden',
@@ -21,14 +25,15 @@ const customNodeStyles: any = {
   height: '650px',
 };
 
-const mappingOfUser = () => {
-  const [
-    profileSources,
-    loadedProfileSources,
-    // listOfProfileSources,
-  ] = ProfileSources(0);
+const oktaColour = '#009CDD';
+const defaultColour = 'white';
 
-  console.log();
+const mappingOfUser = () => {
+  // console.log();
+  // let dataFromProfileSource: any;
+  let dataFromOkta: any;
+  let assignedApps: any;
+
   const [
     appLabel,
     defaultId,
@@ -47,13 +52,15 @@ const mappingOfUser = () => {
       data: {
         label: displayTextInsideTheNode('Okta', oktaLogo),
       },
-      position: { x: 900, y: initialPosition },
+      position: { x: 750, y: initialPosition },
     },
   ];
 
-  let { userId = '' } = {
+  let { userId = '', userName = '', nodeId = '' } = {
     ...useParams(),
   };
+
+  // console.log(userId);
 
   const [attributeMapping, setAttributeMapping] = useState<any>(
     initialElements
@@ -89,6 +96,35 @@ const mappingOfUser = () => {
   const [nodeIdForUserAssignedApp, setNodeIdForUserAssignedApp] = useState<any>(
     ''
   );
+  const [profileSourceNumber, setProfileSourceNumber] = useState<any>(
+    nodeId.split('-')[1]
+  );
+  const [profileSourceName, setProfileSourceName] = useState<any>('');
+  const [sourceFound, setSourceFound] = useState<boolean>(false);
+
+  // const [dataFromProfileSource, setDataFromProfileSource] = useState<any>([]);
+
+  const [
+    profileSourceToOktaKeysArray,
+    setProfileSourceToOktaKeysArray,
+  ] = useState<any>([]);
+  const [
+    profileSourceToOktaValuesArray,
+    setProfileSourceToOktaValuesArray,
+  ] = useState<any>([]);
+  const [oktaKeysArray, setOktaKeysArray] = useState<any>([]);
+  const [oktaValuesArray, setOktaValuesArray] = useState<any>([]);
+  const [appsArray, setAppsArray] = useState<any>([]);
+
+  const [
+    profileSources,
+    loadedProfileSources,
+    listOfProfileSources,
+  ] = ProfileSources(0, profileSourceNumber);
+
+  const [sources, setSources] = useState<any>(profileSources);
+
+  // console.log(profileSourceToOktaKeysArray);
 
   const getDataForMappingFromOkta = () => {
     sendUrl(`/api/v1/users/${userId}`)
@@ -113,7 +149,9 @@ const mappingOfUser = () => {
   // console.log(profileSources);
 
   const getListOfAppsAssignedToUser = () => {
-    console.log(userId);
+    // window.location.reload();
+    // console.log('starting');
+    // console.log(userId);
     sendUrl(`/api/v1/apps?filter=user.id+eq+"${userId}"&expand=user/${userId}`)
       .then((response) => {
         const appsList = response!.data;
@@ -124,71 +162,78 @@ const mappingOfUser = () => {
       })
       .then((response) => {
         setDataLoaded(false);
-        checkForProfileSourceAssignedToUser(response, profileSources);
+        if (loadedProfileSources) {
+          // console.log(profileSources);
+          checkForProfileSourceAssignedToUser(response);
+        }
+        // checkForProfileSourceAssignedToUser(response, profileSources);
       });
   };
 
-  // const checkForProfileSourceAssignedToUser = () => {
-  //   [...listOfAppsAssignedToUser].map((app) => {
-  //     [...listOfProfileSources].map((ps) => {
-  //       if (ps._embedded.app.id === app.id) {
-  //         // alert('Yes!');
-  //         [...profileSources].map((item) => {
-  //           if (item.data.label.props.children[0] === ps._embedded.app.label) {
-  //             setAppNodeId(item.id);
-  //             console.log(item.data.label.props.children[0]);
-  //           }
-  //         });
-  //         setProfileSourceId(app.id);
-  //         getListOfUsersAssignedToProfileSource(app.id);
-  //         getUpstreamMappingsData(app.id);
-  //         console.log('Hello!');
-  //         // console.log(profileSources);
-  //         // getUpstreamMappingsData(app.id);
-  //       }
-  //     });
-  //   });
-  // };
+  useEffect(() => {
+    checkForProfileSourceAssignedToUser(listOfAppsAssignedToUser);
+  }, [listOfProfileSources]);
 
-  const checkForProfileSourceAssignedToUser = (response, profileSources) => {
+  // console.log(listOfProfileSources);
+  const checkForProfileSourceAssignedToUser = (response) => {
     // let nodeId = '';
+    console.log('starting3');
+    let counter = 0;
+    let profileSourceFound: boolean = false;
     let listOfApps = response;
-    console.log(listOfApps);
+    // console.log(listOfApps);
     console.log(profileSources);
-    let profileSourceFound = false;
     [...listOfApps].map((item) => {
       [...profileSources].map((ps) => {
         if (item.label === ps.data.label.props.children[0]) {
-          // console.log('Yes!');
+          console.log('starting4');
           let nodeId = ps.id;
           profileSourceFound = true;
-          console.log(ps.id);
+          setSourceFound(true);
+          setProfileSourceName(ps.data.label.props.children[0]);
           setAppNodeId(ps.id);
           getListOfUsersAssignedToProfileSource(item.id, nodeId);
+          // setSource(ps.data.label.props.children[0]);
+          // profileSource = ps.data.label.props.children[0];
+
+          // console.log(ps.id);
           // getUpstreamMappingsData(item.id, ps.id);
           // showMappingFromProfileSourceToOkta(ps.id);
+          return;
         }
       });
+      counter++;
+      // console.log(counter);
     });
-    if (!profileSourceFound) {
-      alert('The selected user is not assigned to any profile source.');
-      setMappingFromProfileSourceToOkta([]);
-    }
+    // console.log(listOfApps.length);
+    // if (!profileSourceFound && listOfApps.length === counter) {
+    //   alert('The selected user is not assigned to any profile source.');
+    //   setMappingFromProfileSourceToOkta([]);
+    // }
+    // if (!profileSourceFound && listOfApps.length === counter) {
+    //   console.log(counter);
+    //   setMappingFromProfileSourceToOkta([]);
+    //   alert('fine!');
+    // }
   };
+
+  // console.log(profileSource);
 
   const getListOfUsersAssignedToProfileSource = (appId, nodeId) => {
     // setLoadedUsersList(false);
     // setDataLoaded(false);
     // let appId = profileSourceId;
-    // console.log('yes!');
+    console.log('yes!');
     sendUrl(`/api/v1/apps/${appId}/users?expand=skinny-user%2Ctask&limit=5000`)
       .then((response) => {
         const userData = response!.data;
+        console.log(userData);
         setListOfUsersFromProfileSource(userData);
         // showMappingFromProfileSourceToOkta(nodeId);
-        return response!.data;
+        return userData;
       })
       .then((response) => {
+        // console.log(response);
         setLoadedUsersList(true);
         getUpstreamMappingsData(appId, nodeId, response);
         // setDataLoaded(true);
@@ -203,69 +248,79 @@ const mappingOfUser = () => {
     // setDataLoaded(false);
     // console.log(defaultUserId);
     // let appId = profileSourceId;
+    // console.log(response);
     sendUrl(`/api/v1/mappings?sourceId=${appId}&targetId=${defaultUserId}`)
       .then((response) => {
         let mappingId = response!.data[0].id;
         sendUrl(`/api/v1/mappings/${mappingId}`).then((response) => {
           const mappingData = response!.data.properties;
           setUpstreamMappingData(mappingData);
+          // console.log(mappingData);
         });
       })
       .then(() => {
         setDataLoaded(true);
+        // console.log(response);
+      })
+      .then(() => {
         showMappingFromProfileSourceToOkta(nodeId, response);
       });
   };
 
-  // useEffect(() => {
-  //   // checkForProfileSourceAssignedToUser();
-  //   showMappingFromProfileSourceToOkta();
-  // }, [upstreamMappingData, listOfUsersFromProfileSource]);
+  useEffect(() => {
+    getListOfAppsAssignedToUser();
+  }, [loadedProfileSources]);
 
-  // useEffect(() => {
-  //   showMappingFromProfileSourceToOkta();
-  // }, [appNodeId]);
+  useEffect(() => {}, [sources]);
 
   useEffect(() => {
     getDefaultUserId();
-    // checkForProfileSourceAssignedToUser();
-  }, []);
-
-  useEffect(() => {
-    getListOfAppsAssignedToUser();
   }, []);
 
   useEffect(() => {
     getDataForMappingFromOkta();
     getListOfAppsAssignedToUser();
-    // checkForProfileSourceAssignedToUser();
-    // showMappingFromProfileSourceToOkta();
-    //     getDefaultUserId();
   }, [userId]);
 
-  // useEffect(() => {
-  //   showMappingFromProfileSourceToOkta();
-  // }, [sourceId]);
+  useEffect(() => {
+    showMappingFromProfileSourceToOkta(appNodeId, listOfUsersFromProfileSource);
+  }, [upstreamMappingData]);
 
-  // useEffect(() => {
-  //   // if (dataLoaded) {
-  //   showMappingFromProfileSourceToOkta();
-  //   // }
-  // }, [listOfUsersFromProfileSource, appNodeId]);
+  useEffect(() => {
+    // checkForProfileSourceAssignedToUser(listOfAppsAssignedToUser, nodeId);
+    // showMappingFromProfileSourceToOkta(nodeId, listOfUsersFromProfileSource);
+  }, [listOfUsersFromProfileSource]);
+
+  useEffect(() => {
+    // console.log(profileSource);
+    getAllDataForCsv();
+  }, [dataFromOkta]);
 
   useEffect(() => {
     showAppsAssignedToSelectedUser();
     if (loadedMappingData) {
       showMappingOfUserFromOkta();
     }
+    // getDataForMappingFromOkta();
   }, [listOfAppsAssignedToUser]);
 
   useEffect(() => {
     showAppsAssignedToSelectedUser();
   }, [nodeIdForUserAssignedApp]);
 
-  // console.log(listOfAppsAssignedToUser);
-  // console.log(listOfProfileSources);
+  useEffect(() => {
+    getAllDataForCsv();
+    prepareDataForCsvExport();
+  }, [mappingFromProfileSourceToOkta, mappingFromOkta, userAssignedApps]);
+
+  useEffect(() => {
+    prepareDataForCsvExport();
+  }, [
+    mappingFromProfileSourceToOkta,
+    mappingFromOkta,
+    userAssignedApps,
+    profileSourceToOktaKeysArray,
+  ]);
 
   const getMappingNodeTextLength = (node: number, data: any) => {
     let previousNodeTextLength = 0;
@@ -283,18 +338,22 @@ const mappingOfUser = () => {
 
   //   console.log(mappingDataFromProfileSource);
   const showMappingFromProfileSourceToOkta = (nodeId, response) => {
-    if (dataLoaded && loadedUsersList) {
+    if (loadedUsersList) {
+      setProfileSourceNumber(appNodeId.split('-')[1]);
       let listOfUsersFromPs = response;
       // let nodeId = appNodeId;
-      // console.log(appNodeId);
+      // console.log(nodeId);
+      // console.log(response);
       let initialPosition = 0;
       // console.log(data);
       let tempNodes: any = [];
-      let yCoordinateOfElement = initialPosition - 50;
+      let yCoordinateOfElement = initialPosition - 20;
       let mappingData = { ...upstreamMappingData };
       // console.log(mappingData);
-      console.log(listOfUsersFromProfileSource);
-      console.log(nodeId);
+      console.log(listOfUsersFromPs);
+      // nodeId = 'profileSource-4';
+      // console.log(nodeId);
+      // console.log(mappingData);
       [...listOfUsersFromPs].map((item) => {
         if (item.id === userId) {
           Object.keys(mappingData).forEach((element, index) => {
@@ -313,7 +372,7 @@ const mappingOfUser = () => {
                       ),
                     },
                     position: {
-                      x: 420,
+                      x: 250,
                       y: yCoordinateOfElement += getMappingNodeTextLength(
                         index,
                         upstreamMappingData
@@ -332,7 +391,7 @@ const mappingOfUser = () => {
                       ),
                     },
                     position: {
-                      x: 650,
+                      x: 500,
                       y: yCoordinateOfElement += 50,
                     },
                     style: { borderColor: '#009CDD' },
@@ -364,12 +423,114 @@ const mappingOfUser = () => {
         }
       });
       setMappingFromProfileSourceToOkta(tempNodes);
+      // dataFromProfileSource = tempNodes;
     }
+  };
+  // console.log(dataFromProfileSource);
+
+  const getAllDataForCsv = () => {
+    // console.log(mappingFromProfileSourceToOkta);
+    // setProfileSourceToOktaKeysArray([]);
+    // profileSource;
+    // console.log('Hi');
+    // console.log(dataFromOkta);
+    // profileSource = source;
+    let data: any = [];
+    let data1: any = [];
+    let data2: any = [];
+    let map: any = [];
+    let map1: any = [];
+    let map2: any = [];
+    let apps: any = [];
+    if (mappingFromProfileSourceToOkta !== undefined) {
+      mappingFromProfileSourceToOkta.filter((item) => {
+        if (
+          item.id.split('-')[0] === 'userAttr' ||
+          item.id.split('-')[0] === 'appAttr'
+        ) {
+          // console.log(item.data.label.props.children[0]);
+          data.push(item.data.label.props.children[0]);
+        }
+      });
+    }
+
+    // console.log(data);
+
+    data.forEach((item, index) => {
+      if (index % 2 === 0) {
+        data1.push(item);
+      } else if ((index + 1) % 2 === 0) {
+        data2.push(item);
+      }
+    });
+    // console.log(data1);
+
+    setProfileSourceToOktaKeysArray(data1);
+    setProfileSourceToOktaValuesArray(data2);
+
+    if (mappingFromOkta !== undefined) {
+      mappingFromOkta.filter((item) => {
+        if (
+          item.id.split('-')[0] === 'okta' ||
+          item.id.split('-')[0] === 'oktaToMap'
+        ) {
+          map.push(item.data.label.props.children[0]);
+        }
+      });
+    }
+
+    map.forEach((item, index) => {
+      if (index % 2 == 0) {
+        map1.push(item);
+      } else if ((index + 1) % 2 == 0) {
+        map2.push(item);
+      }
+    });
+
+    setOktaKeysArray(map1);
+    setOktaValuesArray(map2);
+
+    if (userAssignedApps !== undefined) {
+      // console.log('Hello');
+      userAssignedApps.forEach((item) => {
+        apps.push(item.data.label.props.children[0]);
+      });
+    }
+
+    setAppsArray(apps);
+  };
+
+  const prepareDataForCsvExport = () => {
+    let maxIndexLength: any = Math.max(
+      profileSourceToOktaKeysArray.length,
+      oktaKeysArray.length,
+      appsArray.length
+    );
+
+    let output: any = [];
+    for (let index = 0; index < maxIndexLength; index++) {
+      // for (const index of maxIndexLength) {
+      let output1 = [
+        {
+          profileSource: profileSourceName ?? '',
+          key1: profileSourceToOktaKeysArray[index] ?? '',
+          value1: profileSourceToOktaValuesArray[index] ?? '',
+          Okta: 'Okta',
+          key2: oktaKeysArray[index] ?? '',
+          value2: oktaValuesArray[index] ?? '',
+          appsAssigned: appsArray[index] ?? '',
+        },
+      ];
+      output = output.concat(output1);
+    }
+    // console.log(output);
+    return output;
   };
 
   const showMappingOfUserFromOkta = () => {
+    // console.log(profileSourceToOktaKeysArray);
     let yCoordinateOfElement = -50;
-    const tempNodes: any = [];
+    let tempNodes: any = [];
     let mappingData: any = { ...userMappingData };
     //     console.log(mappingData.profile);
     Object.keys(mappingData.profile).forEach((item, index) => {
@@ -388,7 +549,7 @@ const mappingOfUser = () => {
               ),
             },
             position: {
-              x: 1120,
+              x: 1000,
               y: yCoordinateOfElement += 50,
             },
             style: { borderColor: '#009CDD' },
@@ -402,7 +563,7 @@ const mappingOfUser = () => {
               label: displayTextInsideTheNode(item, oktaLogo),
             },
             position: {
-              x: 1370,
+              x: 1250,
               y: yCoordinateOfElement += 50,
             },
             style: { borderColor: '#009CDD' },
@@ -424,6 +585,8 @@ const mappingOfUser = () => {
       }
     });
     setMappingFromOkta(tempNodes);
+    dataFromOkta = tempNodes;
+    // console.log(dataFromOkta);
   };
 
   const showAppsAssignedToSelectedUser = () => {
@@ -441,18 +604,19 @@ const mappingOfUser = () => {
           label: displayTextInsideTheNode(item.label, item._links.logo[0].href),
         },
         position: {
-          x: 1600,
+          x: 1500,
           y: yCoordinateOfElement += 70,
         },
         style: {
           background:
             `userApp-${index + 1}` === nodeIdForUserAssignedApp
-              ? '#009CDD'
-              : 'white',
+              ? oktaColour
+              : defaultColour,
         },
       });
     });
     setUserAssignedApps(tempNodes);
+    // assignedApps = tempNodes;
   };
 
   const onElementClick = (event: any, element: any) => {
@@ -467,20 +631,10 @@ const mappingOfUser = () => {
           setIdForUserAssignedApp(item.id);
           getListOfUsersAssignedToApp(item.id, id);
           setClickedApp(true);
-          putBackgroundColour(id);
           setNodeIdForUserAssignedApp(id);
           // matchUserFromAppAndSearchBar(element.id);
         }
       });
-    }
-  };
-
-  const putBackgroundColour = (nodeId) => {
-    const backgroundColour = 'blue';
-    if (nodeId === 'userApp-3') {
-      return backgroundColour;
-    } else {
-      return 'white';
     }
   };
 
@@ -529,7 +683,7 @@ const mappingOfUser = () => {
               label: displayTextInsideTheNode(item.profile[key], oktaLogo),
             },
             position: {
-              x: 1120,
+              x: 1000,
               y: yCoordinateOfElement += 50,
             },
             style: { borderColor: '#009CDD' },
@@ -543,7 +697,7 @@ const mappingOfUser = () => {
               label: displayTextInsideTheNode(key, oktaLogo),
             },
             position: {
-              x: 1370,
+              x: 1250,
               y: yCoordinateOfElement += 50,
             },
             style: { borderColor: '#009CDD' },
@@ -575,29 +729,59 @@ const mappingOfUser = () => {
     // }
   };
 
-  // const matchNamesOfProfileSources = (appName) => {
-  //   [...listOfProfileSources].map((item) => {
-  //     if (appName === item._embedded.app.label) {
-  //       setSourceId(item._embedded.app.id);
-  //       console.log(item._embedded.app.label);
-  //       console.log(appName);
-  //       getListOfUsersAssignedToApp(item._embedded.app.id);
-  //     }
-  //   });
-  // };
+  const headers = [
+    { label: 'Profile Source', key: 'profileSource' },
+    { label: 'Key-1', key: 'key1' },
+    { label: 'Value-1', key: 'value1' },
+    { label: 'Okta', key: 'Okta' },
+    { label: 'Key-2', key: 'key2' },
+    { label: 'Value-2', key: 'value2' },
+    { label: 'Apps Assigned', key: 'appsAssigned' },
+  ];
+
+  const history = useHistory();
 
   return (
     <div style={customNodeStyles}>
+      {/* <CSVLink
+        data={prepareDataForCsvExport()}
+        headers={headers}
+        filename={`${userName}Mapping.csv`}
+      >
+        <div>
+          <button
+            style={{
+              position: 'relative',
+              left: '585px',
+              backgroundColor: '#c32148',
+              color: 'white',
+            }}
+          >
+            Download User Data
+          </button>
+        </div>
+      </CSVLink> */}
+      {/* <>
+        <button
+          onClick={() => {
+            history.goBack();
+          }}
+        >
+          Go Back
+        </button>
+      </> */}
+
       {loadedProfileSources && loadedUsersList && (
         <ReactFlow
           elements={[
+            ...profileSources,
             ...attributeMapping,
             ...mappingFromProfileSourceToOkta,
             ...userAssignedApps,
             ...mappingFromOkta,
-            ...profileSources,
           ]}
           onElementClick={onElementClick}
+          defaultZoom={0.8}
         ></ReactFlow>
       )}
     </div>

@@ -14,28 +14,52 @@ const customNodeStyles: any = {
   height: '650px',
 };
 
+const oktaColour = '#009CDD';
+const defaultColour = 'white';
+
 function getUniqueListBy(arr, key) {
   return [...new Map(arr.map((item) => [item[key], item])).values()];
 }
 
-const ProfileSources = (initialPosition) => {
+const ProfileSources = (initialPosition, profileSourceNumber) => {
   const [listOfProfileSources, setListOfProfileSources] = useState<any>([]);
   const [profileSources, setProfileSources] = useState<any>();
   const [loadedProfileSources, setLoadedProfileSources] = useState<Boolean>(
     false
   );
 
+  // const getProfileSources = () => {
+  //   sendUrl(
+  //     `/api/v1/apps/user/types?expand=app%2CappLogo&category=directory`
+  //   ).then((response) => {
+  //     console.log(response!.data);
+  //     let profileSourceData = response!.data;
+  //     // setListOfProfileSources(profileSourceData);
+  //     setListOfProfileSources(getUniqueListBy(profileSourceData, 'id'));
+  //     //       console.log(listOfProfileSources);
+  //     setLoadedProfileSources(true);
+  //   });
+  // };
+
   const getProfileSources = () => {
-    sendUrl(
-      `/api/v1/apps/user/types?expand=app%2CappLogo&category=directory`
-    ).then((response) => {
-      //       console.log(response!.data);
-      let profileSourceData = response!.data;
-      // setListOfProfileSources(profileSourceData);
-      setListOfProfileSources(getUniqueListBy(profileSourceData, 'id'));
-      //       console.log(listOfProfileSources);
-      setLoadedProfileSources(true);
-    });
+    sendUrl(`/api/v1/apps/user/types?expand=app%2CappLogo&category=directory`)
+      .then((response) => {
+        // console.log(response!.data);
+        let profileSourceData = response!.data;
+        // setListOfProfileSources(profileSourceData);
+        // console.log(getUniqueListBy(profileSourceData, 'id'));
+        return getUniqueListBy(profileSourceData, 'id');
+        // setListOfProfileSources();
+        //       console.log(listOfProfileSources);
+        // setLoadedProfileSources(true);
+      })
+      .then((uniqueList) => {
+        // console.log(uniqueList);
+        setListOfProfileSources(uniqueList);
+      })
+      .then(() => {
+        setLoadedProfileSources(true);
+      });
   };
 
   const showProfileSources = () => {
@@ -59,10 +83,15 @@ const ProfileSources = (initialPosition) => {
           x: 0,
           y: initialPosition += 80,
         },
+        style: {
+          background:
+            `${index + 1}` === profileSourceNumber ? oktaColour : defaultColour,
+        },
         // style: appNumber === index + 1 ? {background: '#D6D5E6'} : {background: 'white'}
       });
     });
     setProfileSources(tempNodes);
+    // console.log(profileSources);
   };
 
   useEffect(() => {
@@ -74,9 +103,21 @@ const ProfileSources = (initialPosition) => {
     showProfileSources();
   }, [initialPosition]);
 
-  useEffect(() => {}, [profileSources]);
+  useEffect(() => {
+    showProfileSources();
+  }, [profileSourceNumber]);
 
+  useEffect(() => {}, [loadedProfileSources]);
+
+  // useEffect(() => {}, [profileSources]);
+  // console.log(profileSources);
+
+  // useEffect(() => {}, [nodeId]);
+
+  // useEffect(() => {}, [loadedProfileSources]);
+  // if (loadedProfileSources) {
   return [profileSources, loadedProfileSources, listOfProfileSources];
+  // }
 };
 
 export default ProfileSources;
