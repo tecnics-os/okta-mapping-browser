@@ -12,6 +12,8 @@ import ProfileSources from './ProfileSources';
 // import { profile } from 'console';
 import { CSVLink } from 'react-csv';
 // import { useFormControl } from '@material-ui/core';
+import { Circles } from 'react-loading-icons';
+import noLogo from '../../assets/white.png';
 
 const sendUrl = (url: string) => {
   return request(url);
@@ -101,6 +103,7 @@ const mappingOfUser = () => {
   );
   const [profileSourceName, setProfileSourceName] = useState<any>('');
   const [sourceFound, setSourceFound] = useState<boolean>(false);
+  const [loadedUpstreamData, setLoadedUpstreamData] = useState<boolean>(false);
 
   // const [dataFromProfileSource, setDataFromProfileSource] = useState<any>([]);
 
@@ -177,16 +180,16 @@ const mappingOfUser = () => {
   // console.log(listOfProfileSources);
   const checkForProfileSourceAssignedToUser = (response) => {
     // let nodeId = '';
-    console.log('starting3');
+    // console.log('starting3');
     let counter = 0;
     let profileSourceFound: boolean = false;
     let listOfApps = response;
     // console.log(listOfApps);
-    console.log(profileSources);
+    // console.log(profileSources);
     [...listOfApps].map((item) => {
       [...profileSources].map((ps) => {
         if (item.label === ps.data.label.props.children[0]) {
-          console.log('starting4');
+          // console.log('starting4');
           let nodeId = ps.id;
           profileSourceFound = true;
           setSourceFound(true);
@@ -206,10 +209,10 @@ const mappingOfUser = () => {
       // console.log(counter);
     });
     // console.log(listOfApps.length);
-    // if (!profileSourceFound && listOfApps.length === counter) {
-    //   alert('The selected user is not assigned to any profile source.');
-    //   setMappingFromProfileSourceToOkta([]);
-    // }
+    if (!profileSourceFound && listOfApps.length === counter) {
+      // alert('The selected user is not assigned to any profile source.');
+      setMappingFromProfileSourceToOkta([]);
+    }
     // if (!profileSourceFound && listOfApps.length === counter) {
     //   console.log(counter);
     //   setMappingFromProfileSourceToOkta([]);
@@ -223,11 +226,11 @@ const mappingOfUser = () => {
     // setLoadedUsersList(false);
     // setDataLoaded(false);
     // let appId = profileSourceId;
-    console.log('yes!');
+    // console.log('yes!');
     sendUrl(`/api/v1/apps/${appId}/users?expand=skinny-user%2Ctask&limit=5000`)
       .then((response) => {
         const userData = response!.data;
-        console.log(userData);
+        // console.log(userData);
         setListOfUsersFromProfileSource(userData);
         // showMappingFromProfileSourceToOkta(nodeId);
         return userData;
@@ -350,7 +353,7 @@ const mappingOfUser = () => {
       let yCoordinateOfElement = initialPosition - 20;
       let mappingData = { ...upstreamMappingData };
       // console.log(mappingData);
-      console.log(listOfUsersFromPs);
+      // console.log(listOfUsersFromPs);
       // nodeId = 'profileSource-4';
       // console.log(nodeId);
       // console.log(mappingData);
@@ -368,7 +371,7 @@ const mappingOfUser = () => {
                     data: {
                       label: displayTextInsideTheNode(
                         mappingData[element].expression,
-                        profileSourceLogo
+                        noLogo
                       ),
                     },
                     position: {
@@ -387,7 +390,7 @@ const mappingOfUser = () => {
                     data: {
                       label: displayTextInsideTheNode(
                         item._embedded.user.profile[attribute],
-                        profileSourceLogo
+                        noLogo
                       ),
                     },
                     position: {
@@ -423,6 +426,7 @@ const mappingOfUser = () => {
         }
       });
       setMappingFromProfileSourceToOkta(tempNodes);
+      setLoadedUpstreamData(true);
       // dataFromProfileSource = tempNodes;
     }
   };
@@ -545,7 +549,7 @@ const mappingOfUser = () => {
             data: {
               label: displayTextInsideTheNode(
                 mappingData.profile[item],
-                oktaLogo
+                noLogo
               ),
             },
             position: {
@@ -560,7 +564,7 @@ const mappingOfUser = () => {
             targetPosition: 'left',
             type: 'output',
             data: {
-              label: displayTextInsideTheNode(item, oktaLogo),
+              label: displayTextInsideTheNode(item, noLogo),
             },
             position: {
               x: 1250,
@@ -680,7 +684,7 @@ const mappingOfUser = () => {
             targetPosition: 'left',
             type: 'default',
             data: {
-              label: displayTextInsideTheNode(item.profile[key], oktaLogo),
+              label: displayTextInsideTheNode(item.profile[key], noLogo),
             },
             position: {
               x: 1000,
@@ -694,7 +698,7 @@ const mappingOfUser = () => {
             targetPosition: 'left',
             type: 'default',
             data: {
-              label: displayTextInsideTheNode(key, oktaLogo),
+              label: displayTextInsideTheNode(key, noLogo),
             },
             position: {
               x: 1250,
@@ -771,7 +775,7 @@ const mappingOfUser = () => {
         </button>
       </> */}
 
-      {loadedProfileSources && loadedUsersList && (
+      {/* {loadedProfileSources && loadedUsersList && (
         <ReactFlow
           elements={[
             ...profileSources,
@@ -783,9 +787,41 @@ const mappingOfUser = () => {
           onElementClick={onElementClick}
           defaultZoom={0.8}
         ></ReactFlow>
+      )} */}
+
+      {loadedProfileSources && loadedUsersList && loadedUpstreamData ? (
+        <ReactFlow
+          elements={[
+            ...profileSources,
+            ...attributeMapping,
+            ...mappingFromProfileSourceToOkta,
+            ...userAssignedApps,
+            ...mappingFromOkta,
+          ]}
+          onElementClick={onElementClick}
+          defaultZoom={0.8}
+        ></ReactFlow>
+      ) : (
+        <Circles
+          width={'50px'}
+          height={'50px'}
+          stroke="#98ff98"
+          strokeOpacity={0.125}
+          speed={2}
+        />
       )}
     </div>
   );
 };
+
+{
+  /* <Circles
+            width={'30px'}
+            height={'30px'}
+            stroke="#98ff98"
+            strokeOpacity={0.125}
+            speed={2}
+          /> */
+}
 
 export default mappingOfUser;

@@ -5,12 +5,10 @@ import oktaLogo from '../../assets/okta-logo.png';
 import { request } from '../Request';
 import useAppsData from './ApplicationData';
 import useMappingData from './MappingData';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Box from '@material-ui/core/Box';
-import initialElement from './InitialElements';
 import displayTextInsideTheNode from './NodeTextStyling';
 import ProfileSources from './ProfileSources';
 import { CSVLink } from 'react-csv';
+import { Circles } from 'react-loading-icons';
 
 const customNodeStyles: any = {
   overflow: 'hidden',
@@ -44,11 +42,8 @@ const ProfileMappings = () => {
     ...useParams(),
   };
 
-  // console.log(defaultUserId);
-
   profileSourceLabel = label;
   appId = id2;
-  // console.log(id2);
 
   const appLogo = decodeURIComponent(logo);
   profileSourceLogo = appLogo;
@@ -75,6 +70,8 @@ const ProfileMappings = () => {
   );
   const [appName, setAppName] = useState<any>();
   const [profileSourceName, setProfileSourceName] = useState<any>(label);
+  const [disabled, setDisabled] = useState<boolean>(false);
+  const [screenDisabled, setScreenDisabled] = useState<boolean>(false);
   const [
     profileSourceToOktaKeysArray,
     setProfileSourceToOktaKeysArray,
@@ -85,8 +82,11 @@ const ProfileMappings = () => {
   ] = useState<any>([]);
   const [oktaToAppKeysArray, setOktaToAppKeysArray] = useState<any>([]);
   const [oktaToAppValuesArray, setOktaToAppValuesArray] = useState<any>([]);
-
-  // console.log(profileSourceName);
+  const [appNamesForCsv, setAppNamesForCsv] = useState<any>([]);
+  const [allAppsDataForCsvExport, setAllAppsDataForCsvExport] = useState<any>(
+    []
+  );
+  const [finalDataForCsvExport, setFinalDataForCsvExport] = useState<any>([]);
 
   const [
     profileSources,
@@ -94,15 +94,7 @@ const ProfileMappings = () => {
     profileSourcesData,
   ] = ProfileSources(initialPosition - 150, profileSourceNumber);
 
-  // console.log(profileSources);
   let initialElements = [
-    // {
-    //   id: 'arrow1',
-    //   source: `${profileSourceId}` === '' ? `${nodeId}` : `${profileSourceId}`,
-    //   target: `oktaApp`,
-    //   animated: true,
-    //   label: 'mappings',
-    // },
     {
       id: 'oktaApp',
       sourcePosition: 'right',
@@ -120,7 +112,6 @@ const ProfileMappings = () => {
   );
 
   const getUpstreamMappingsData = (appId) => {
-    // console.log(defaultUserId);
     sendUrl(
       `/api/v1/mappings?sourceId=${appId}&targetId=${defaultUserId}`
     ).then((response) => {
@@ -141,7 +132,6 @@ const ProfileMappings = () => {
       previousNodeTextLength = Object.values<any>(data)[previousNode].expression
         .length;
       let currentNodeTextLength = previousNodeTextLength / 1.1;
-      // console.log(previousNodeTextLength);
       return currentNodeTextLength;
     }
   };
@@ -337,10 +327,6 @@ const ProfileMappings = () => {
     showUpstreamMapping();
   }, [id2]);
 
-  // useEffect(() => {
-  //   getInitialNodes(profileSourceId);
-  // }, [profileSourceId]);
-
   useEffect(() => {
     setAttributeMapping([
       ...initialElements,
@@ -357,7 +343,28 @@ const ProfileMappings = () => {
     showAllAppsFromOkta();
   }, [appNumber]);
 
-  // console.log(mapsLoaded);
+  useEffect(() => {
+    getMappingDataForCsvExport();
+  }, [downstreamMappingData, upstreamMappingData, appsData]);
+
+  useEffect(() => {
+    prepareDataForCsvExport();
+  }, [upstreamMappingData, downstreamMappingData]);
+
+  useEffect(() => {
+    prepareDataForCsvExport();
+  }, [allAppsDataForCsvExport]);
+
+  useEffect(() => {
+    declareHeaders1();
+  }, [appNamesForCsv]);
+
+  useEffect(() => {
+    setScreenDisabled(true);
+    setTimeout(() => {
+      setScreenDisabled(false);
+    }, 8000);
+  }, []);
 
   const onElementClick = (event: any, element: any) => {
     if (element.id === 'arrow1') {
@@ -382,218 +389,224 @@ const ProfileMappings = () => {
       setBackgroundColourOfNode(oktaColour);
       setProfileSourceNumber(profileSourceNumber);
       setProfileSourceName(event.srcElement.innerText);
+      // setDisabled(true);
+      setDisabled(true);
+      setTimeout(() => {
+        setDisabled(false);
+      }, 6000);
     }
   };
 
   const gotoUpstreamMapping = (appName) => {
     [...profileSourcesData].map((item) => {
       if (appName === item._embedded.app.label) {
-        // console.log(item._embedded.app.id);
         getUpstreamMappingsData(item._embedded.app.id);
       }
     });
   };
 
+  //Mapping for all apps.
   const getMappingDataForCsvExport = () => {
+    let dataArrayTemp: any = [];
+    let dataArrayFinal: any = [];
+    let appNamesArray: any = [];
     let upstreamData = { ...upstreamMappingData };
-    console.log(downstreamMappingData);
     setTimeout(() => {
-      Object.keys(upstreamData).map((second) => {
-        // console.log(up);
-        [...downstreamMappingData].map((item: any, index) => {
-          let singleAppMappingData: any = Object.values(
-            downstreamMappingData[index]
-          )[3];
-          console.log(singleAppMappingData);
-          if (Object.keys(singleAppMappingData).length === 0) {
-            return;
-          } else {
-            Object.keys(item.properties).map((third: any) => {
-              if (item.properties[third].expression.split('.')[1] === second) {
-                console.log(third);
-              } else {
-                console.log('Fine!');
-              }
+      [...downstreamMappingData].map((item, index1) => {
+        let appNameFound = true;
+        let singleAppMappingData: any = Object.values(
+          downstreamMappingData[index1]
+        )[3];
+        for (let index = 0; index < Object.keys(upstreamData).length; index++) {
+          dataArrayTemp[index] = '';
+        }
+        if (Object.keys(singleAppMappingData).length === 0) {
+          return;
+        } else {
+          Object.keys(upstreamData).map((column: any, index2) => {
+            Object.keys(item.properties).map((key: any, index3) => {
+              [...appsData].map((app) => {
+                if (app._embedded.app.id === item.target.id) {
+                  if (appNameFound) {
+                    appNamesArray.push(app._embedded.app.label);
+                    appNameFound = false;
+                  }
+                  if (
+                    item.properties[key].expression.split('.')[1] === column
+                  ) {
+                    dataArrayTemp.splice(index2, 1, key);
+                  }
+                }
+              });
             });
-          }
-        });
+          });
+          dataArrayFinal.push(dataArrayTemp.slice());
+        }
       });
+      setAppNamesForCsv(appNamesArray);
+      setAllAppsDataForCsvExport(dataArrayFinal);
     }, 5000);
   };
 
-  // const getMappingDataForCsvExport = () => {
-  //   // console.log(upstreamMappingData);
-  //   let dataArrayTemp: any = [];
-  //   let dataArrayFinal: any = [];
-  //   let upstreamData = { ...upstreamMappingData };
-  //   console.log('appsData', appsData);
-  //   // let mappingData = [...downstreamMappingData];
-  //   // console.log(JSON.parse(JSON.stringify(downstreamMappingData)));
-  //   setTimeout(() => {
-  //     console.log('downData', downstreamMappingData);
-  //     // console.log(mappingData);
-  //     [...downstreamMappingData].map((item, index) => {
-  //       let singleAppMappingData: any = Object.values(
-  //         downstreamMappingData[index]
-  //       )[3];
-  //       if (Object.keys(singleAppMappingData).length === 0) {
-  //         return;
-  //       } else {
-  //         Object.keys(item.properties).map((key: any, index) => {
-  //           // console.log(item.properties[key].expression.split('.')[1]);
-  //           Object.keys(upstreamData).map((column) => {
-  //             [...appsData].map((app) => {
-  //               if (app._embedded.app.id === item.target.id) {
-  //                 // console.log(app._embedded.app.label, column, key);
-  //                 if (
-  //                   item.properties[key].expression.split('.')[1] === column
-  //                 ) {
-  //                   console.log(
-  //                     // app._embedded.app.label,
-  //                     // '--',
-  //                     // column,
-  //                     // '--',
-  //                     key
-  //                   );
-  //                   // dataArrayTemp.push(key);
-  //                 }
-  //                 console.log('nothing');
+  //Data for all apps.
+  const prepareDataForCsvExport = () => {
+    let mappingData = { ...upstreamMappingData };
+    let key1Array: any = [];
+    let value1Array: any = [];
+    let index: any = 0;
+    let finalOutput: any = [];
+    Object.keys(mappingData).forEach((item: any, index) => {
+      key1Array.push(mappingData[item].expression);
+      value1Array.push(item);
+    });
+    while (index < key1Array.length) {
+      let index1: any = 0;
+      let output1 = {
+        profileSource: key1Array[index],
+        OKTA: value1Array[index],
+      };
+      while (index1 < allAppsDataForCsvExport.length) {
+        const key: any = `data${index1 + 1}`;
+        Object.assign(output1, {
+          [key]: allAppsDataForCsvExport[index1][index],
+        });
+        index1++;
+      }
+      index++;
+      let output: any = [];
+      output.push(output1);
+      finalOutput.push(output1);
+    }
+    setFinalDataForCsvExport(finalOutput);
+    return finalOutput;
+  };
 
-  //                 // else if (
-  //                 //   column !== item.properties[key].expression.split('.')[1]
-  //                 // ) {
-  //                 //   // dataArrayTemp.push('nothing');
-  //                 // }
-  //               }
-  //               // console.log(app.id);
-  //               // console.log(downstreamMappingData);
-  //             });
-  //             // if (column === item.properties[key].expression.split('.')[1]) {
-  //             //   // console.log('Fine!');
-  //             //   // console.log(
-  //             //   //   column,
-  //             //   //   item.properties[key].expression.split('.')[1]
-  //             //   // );
-  //             //   console.log(column, '--', key);
-  //             // }
-  //             // else if(item.properties[key].expression.split('.')[1]) {
+  //Data for single selected app.
+  const getSingleMappingDataForCsvExport = () => {
+    // console.log('up', upstreamMapping);
+    // console.log('down', downstreamMapping);
+    // console.log('appName', appName);
+    // console.log('sourceName', profileSourceName);
+    let psToOktaArray: any = [];
+    let oktaToAppArray: any = [];
+    let psToOktaKeysArray: any = [];
+    let psToOktaValuesArray: any = [];
+    let oktaToAppKeysArray: any = [];
+    let oktaToAppValuesArray: any = [];
 
-  //             // }
-  //           });
-  //         });
-  //       }
-  //       dataArrayFinal.push(dataArrayTemp);
-  //       console.log('***************************************');
-  //       console.log(dataArrayFinal);
-  //     });
-  //     console.log(dataArrayFinal);
-  //   }, 5000);
-  //   // const mappingData = { ...upstreamMappingData };
-  //   // Object.keys(mappingData).forEach((item: any) => {
-  //   //   // console.log(mappingData[item].expression, item);
-  //   //   console.log(appsData);
-  //   // });
-  // };
+    if (upstreamMapping !== undefined) {
+      upstreamMapping.filter((up, index) => {
+        if (
+          up.id.split('-')[0] === 'appAttr' ||
+          up.id.split('-')[0] === 'oktaAttr'
+        ) {
+          psToOktaArray.push(up.data.label.props.children[0]);
+        }
+      });
+    }
 
-  // console.log(downstreamMappingData);
+    psToOktaArray.forEach((item, index) => {
+      if (index % 2 === 0) {
+        psToOktaKeysArray.push(item);
+      } else if ((index + 1) % 2 === 0) {
+        psToOktaValuesArray.push(item);
+      }
+    });
+
+    // console.log(psToOktaKeysArray);
+
+    setProfileSourceToOktaKeysArray(psToOktaKeysArray);
+    setProfileSourceToOktaValuesArray(psToOktaValuesArray);
+
+    if (downstreamMapping !== undefined) {
+      downstreamMapping.filter((down, index) => {
+        if (
+          down.id.split('-')[0] === 'okta' ||
+          down.id.split('-')[0] === 'oktaToMap'
+        ) {
+          oktaToAppArray.push(down.data.label.props.children[0]);
+        }
+      });
+    }
+
+    oktaToAppArray.forEach((item, index) => {
+      if (index % 2 === 0) {
+        oktaToAppKeysArray.push(item);
+      } else if ((index + 1) % 2 === 0) {
+        oktaToAppValuesArray.push(item);
+      }
+    });
+
+    setOktaToAppKeysArray(oktaToAppKeysArray);
+    setOktaToAppValuesArray(oktaToAppValuesArray);
+  };
+
+  const prepareSingleMappingDataForCsvExport = () => {
+    let maxIndexLength: any = Math.max(
+      profileSourceToOktaKeysArray.length,
+      oktaToAppKeysArray.length
+    );
+    let output: any = [];
+
+    if (
+      // oktaToAppValuesArray.length !== 0 &&
+      oktaToAppKeysArray.length !== 0 &&
+      // profileSourceToOktaKeysArray.length !== 0 &&
+      profileSourceToOktaValuesArray.length !== 0
+    ) {
+      for (let index = 0; index < maxIndexLength; index++) {
+        oktaToAppKeysArray.map((item, position) => {
+          if (item.split('.')[1] === profileSourceToOktaValuesArray[index]) {
+            let output1 = [
+              {
+                profileSource: profileSourceToOktaKeysArray[index],
+                okta: profileSourceToOktaValuesArray[index],
+                appName: oktaToAppValuesArray[position],
+              },
+            ];
+            output = output.concat(output1);
+          }
+        });
+      }
+    }
+    // console.log(output);
+    return output;
+  };
+
   useEffect(() => {
-    // useMappingData();
+    getSingleMappingDataForCsvExport();
+  }, [upstreamMapping, downstreamMapping, profileSourceName]);
 
-    getMappingDataForCsvExport();
-  }, [downstreamMappingData, upstreamMappingData]);
+  // useEffect(() => {
+  //   getMappingDataForCsvExport();
+  // }, [appName]);
 
-  // const getMappingDataForCsvExport = () => {
-  //   // console.log('up', upstreamMapping);
-  //   // console.log('down', downstreamMapping);
-  //   // console.log('appName', appName);
-  //   // console.log('sourceName', profileSourceName);
-  //   let psToOktaArray: any = [];
-  //   let oktaToAppArray: any = [];
-  //   let psToOktaKeysArray: any = [];
-  //   let psToOktaValuesArray: any = [];
-  //   let oktaToAppKeysArray: any = [];
-  //   let oktaToAppValuesArray: any = [];
+  useEffect(() => {
+    prepareSingleMappingDataForCsvExport();
+  }, [
+    profileSourceToOktaKeysArray,
+    profileSourceToOktaValuesArray,
+    oktaToAppKeysArray,
+    oktaToAppValuesArray,
+  ]);
 
-  //   if (upstreamMapping !== undefined) {
-  //     upstreamMapping.filter((up, index) => {
-  //       if (
-  //         up.id.split('-')[0] === 'appAttr' ||
-  //         up.id.split('-')[0] === 'oktaAttr'
-  //       ) {
-  //         psToOktaArray.push(up.data.label.props.children[0]);
-  //       }
-  //     });
-  //   }
+  //Headers for all apps.
+  const declareHeaders1 = () => {
+    let headers = [
+      { label: `${profileSourceName}`, key: 'profileSource' },
+      { label: 'OKTA', key: 'OKTA' },
+    ];
+    appNamesForCsv.forEach((item, index) => {
+      headers.push({
+        label: appNamesForCsv[index],
+        key: `data${index + 1}`,
+      });
+    });
+    return headers;
+  };
 
-  //   psToOktaArray.forEach((item, index) => {
-  //     if (index % 2 === 0) {
-  //       psToOktaKeysArray.push(item);
-  //     } else if ((index + 1) % 2 === 0) {
-  //       psToOktaValuesArray.push(item);
-  //     }
-  //   });
-
-  //   // console.log(psToOktaKeysArray);
-
-  //   setProfileSourceToOktaKeysArray(psToOktaKeysArray);
-  //   setProfileSourceToOktaValuesArray(psToOktaValuesArray);
-
-  //   if (downstreamMapping !== undefined) {
-  //     downstreamMapping.filter((down, index) => {
-  //       if (
-  //         down.id.split('-')[0] === 'okta' ||
-  //         down.id.split('-')[0] === 'oktaToMap'
-  //       ) {
-  //         oktaToAppArray.push(down.data.label.props.children[0]);
-  //       }
-  //     });
-  //   }
-
-  //   oktaToAppArray.forEach((item, index) => {
-  //     if (index % 2 === 0) {
-  //       oktaToAppKeysArray.push(item);
-  //     } else if ((index + 1) % 2 === 0) {
-  //       oktaToAppValuesArray.push(item);
-  //     }
-  //   });
-
-  //   setOktaToAppKeysArray(oktaToAppKeysArray);
-  //   setOktaToAppValuesArray(oktaToAppValuesArray);
-  // };
-
-  // const prepareDataForCsvExport = () => {
-  //   let maxIndexLength: any = Math.max(
-  //     profileSourceToOktaKeysArray.length,
-  //     oktaToAppKeysArray.length
-  //   );
-  //   let output: any = [];
-
-  //   if (
-  //     // oktaToAppValuesArray.length !== 0 &&
-  //     oktaToAppKeysArray.length !== 0 &&
-  //     // profileSourceToOktaKeysArray.length !== 0 &&
-  //     profileSourceToOktaValuesArray.length !== 0
-  //   ) {
-  //     for (let index = 0; index < maxIndexLength; index++) {
-  //       oktaToAppKeysArray.map((item, position) => {
-  //         if (item.split('.')[1] === profileSourceToOktaValuesArray[index]) {
-  //           let output1 = [
-  //             {
-  //               profileSource: profileSourceToOktaKeysArray[index],
-  //               okta: profileSourceToOktaValuesArray[index],
-  //               appName: oktaToAppValuesArray[position],
-  //             },
-  //           ];
-  //           output = output.concat(output1);
-  //         }
-  //       });
-  //     }
-  //   }
-  //   // console.log(output);
-  //   return output;
-  // };
-
-  const declareHeaders = () => {
+  //Headers for single app.
+  const declareHeaders2 = () => {
     let headers = [
       { label: `${profileSourceName}`, key: 'profileSource' },
       { label: 'Okta', key: 'okta' },
@@ -602,9 +615,9 @@ const ProfileMappings = () => {
     return headers;
   };
 
-  // useEffect(() => {
-  //   getMappingDataForCsvExport();
-  // }, [upstreamMapping, downstreamMapping, profileSourceName]);
+  useEffect(() => {
+    declareHeaders2();
+  }, [profileSourceName, appName]);
 
   // useEffect(() => {
   //   getMappingDataForCsvExport();
@@ -619,30 +632,97 @@ const ProfileMappings = () => {
   //   oktaToAppValuesArray,
   // ]);
 
-  useEffect(() => {
-    declareHeaders();
-  }, [profileSourceName, appName]);
+  const buttonStyling: any = () => {
+    const buttonStyle = {
+      position: 'relative',
+      left: '560px',
+      backgroundColor: '#0A66C2',
+      color: '#ffffff',
+      border: 0,
+      borderRadius: '100px',
+      cursor: 'pointer',
+      fontSize: '16px',
+      justifyContent: 'center',
+      lineHeight: '20px',
+      maxWidth: '480px',
+      minHeight: '40px',
+      minWidth: '0px',
+      overflow: 'hidden',
+      padding: '0px',
+      paddingLeft: '20px',
+      paddingRight: '20px',
+      textAlign: 'center',
+      touchAction: 'manipulation',
+      verticalAlign: 'middle',
+    };
+    return buttonStyle;
+  };
 
   return (
     <div style={customNodeStyles}>
-      {/* <CSVLink
-        data={prepareDataForCsvExport()}
-        headers={declareHeaders()}
+      <CSVLink
+        data={finalDataForCsvExport}
+        headers={declareHeaders1()}
+        filename={`${profileSourceName}_mapping.csv`}
+      >
+        <div>
+          <button disabled={disabled} style={buttonStyling()}>
+            Download All Apps Mapping Data
+          </button>
+        </div>
+      </CSVLink>
+      <div
+        style={{
+          // width: '100px',
+          // height: '100px',
+          textAlign: 'center',
+          position: 'absolute',
+          justifyContent: 'center',
+          margin: 'auto',
+          right: '535px',
+        }}
+      >
+        {disabled && (
+          <Circles
+            width={'30px'}
+            height={'30px'}
+            stroke="#98ff98"
+            strokeOpacity={0.125}
+            speed={2}
+          />
+        )}
+      </div>
+
+      <div
+        style={{
+          width: '800px',
+          position: 'absolute',
+          margin: '0',
+          right: '535px',
+        }}
+      >
+        {screenDisabled && (
+          <Circles
+            width={'30px'}
+            height={'30px'}
+            stroke="#98ff98"
+            strokeOpacity={0.125}
+            speed={2}
+          />
+        )}
+      </div>
+
+      <CSVLink
+        data={prepareSingleMappingDataForCsvExport()}
+        headers={declareHeaders2()}
         filename={`${profileSourceName} to ${appName} mapping.csv`}
       >
         <div>
-          <button
-            style={{
-              position: 'relative',
-              left: '585px',
-              backgroundColor: '#c32148',
-              color: 'white',
-            }}
-          >
-            Download Mapping Data
+          <button style={{ position: 'relative' }}>
+            Download Selected App Mapping Data
           </button>
         </div>
-      </CSVLink> */}
+      </CSVLink>
 
       {mapsLoaded && loadedProfileSources && (
         <ReactFlow
@@ -659,7 +739,9 @@ const useProfileSourceLabel = () => {
   // console.log(profileSourceLabel);
   // console.log(appId);
 
-  useEffect(() => console.log(profileSourceLabel), [appId]);
+  // useEffect(() =>
+  // // console.log(profileSourceLabel),
+  // [appId]);
 
   return [
     profileSourceLabel,

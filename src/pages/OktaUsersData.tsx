@@ -23,7 +23,7 @@ const useOktaUsers = () => {
   };
 
   useEffect(() => {
-    console.log('usersList', usersLoaded);
+    // console.log('usersList', usersLoaded);
     getUsersList();
   }, []);
 

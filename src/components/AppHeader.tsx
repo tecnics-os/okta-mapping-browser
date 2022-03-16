@@ -72,7 +72,7 @@ const AppHeader = (props: AppHeaderProps) => {
   let history = useHistory();
 
   const redirect = (userId: any, userName: any) => {
-    console.log(`/mappings/${userId}/${userName}`);
+    // console.log(`/mappings/${userId}/${userName}`);
     history.push(`/mappings/${userId}/${userName}`);
   };
 

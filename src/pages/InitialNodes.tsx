@@ -64,7 +64,7 @@ const InitialNodes = () => {
     // console.log(listOfProfileSources);
     [...listOfProfileSources].map((item) => {
       if (item._embedded.app.label === appName) {
-        console.log('found!', item._embedded.app.label);
+        // console.log('found!', item._embedded.app.label);
         redirect(
           userProfileTemplateId,
           item._embedded.app.id,

@@ -17,7 +17,7 @@ const useMappingData = () => {
 
   useEffect(() => {
     // tempName();
-    console.log(loadedMappingData);
+    // console.log(loadedMappingData);
   }, [downstreamMapping]);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const useMappingData = () => {
     try {
       getDownstreamMappingsData();
     } finally {
-      console.log('loaded', loadedMappingData);
+      // console.log('loaded', loadedMappingData);
       setLoadedMappingData(true);
     }
   }, [loadedAppData]);
@@ -42,7 +42,7 @@ const useMappingData = () => {
   };
 
   const limiter = new RateLimiter({
-    tokensPerInterval: 20,
+    tokensPerInterval: 25,
     interval: 'second',
   });
 
@@ -69,14 +69,14 @@ const useMappingData = () => {
             let mappingData: any = item.data;
             downstreamMappingData.push(mappingData);
             // setLoadedMappingData(false);
-            console.log(loadedMappingData);
+            // console.log(loadedMappingData);
           });
         });
       })
       .then(() => {
         // tempName();
         setDownstreamMapping(downstreamMappingData);
-        console.log('loaded', loadedMappingData);
+        // console.log('loaded', loadedMappingData);
       });
     // .then(() => {
     //   console.log(downstreamMappingData);
