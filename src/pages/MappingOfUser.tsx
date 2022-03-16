@@ -805,7 +805,7 @@ const mappingOfUser = () => {
         <Circles
           width={'50px'}
           height={'50px'}
-          stroke="#98ff98"
+          fill="dodgerBlue"
           strokeOpacity={0.125}
           speed={2}
         />

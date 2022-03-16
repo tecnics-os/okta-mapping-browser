@@ -686,8 +686,8 @@ const ProfileMappings = () => {
           <Circles
             width={'30px'}
             height={'30px'}
-            stroke="#98ff98"
-            strokeOpacity={0.125}
+            fill="dodgerBlue"
+            // strokeOpacity={0.125}
             speed={2}
           />
         )}
@@ -705,8 +705,8 @@ const ProfileMappings = () => {
           <Circles
             width={'30px'}
             height={'30px'}
-            stroke="#98ff98"
-            strokeOpacity={0.125}
+            fill="dodgerBlue"
+            // strokeOpacity={0.125}
             speed={2}
           />
         )}
