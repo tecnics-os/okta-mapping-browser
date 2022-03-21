@@ -1,5 +1,5 @@
 import { Box, Button, Paper, TextField } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { testApi } from '../api/oktapi';
 import {
@@ -89,21 +89,19 @@ export default function Settings(props: SettingsProps) {
             setSettingsValid(false);
           }}
         />
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Button
-            fullWidth
             variant="outlined"
             // sx={{ mt: 3, mb: 2, mr: 2 }}
             onClick={handleTest}
           >
             {settingsValid
-              ? 'Valid.'
+              ? 'Valid'
               : clickValidation
               ? 'Invalid URL or Key, try again'
               : 'Test Now'}
           </Button>
           <Button
-            fullWidth
             type="submit"
             variant="contained"
             // sx={{ mt: 3, mb: 2 }}
@@ -116,7 +114,6 @@ export default function Settings(props: SettingsProps) {
             Save
           </Button>
           <Button
-            fullWidth
             variant="outlined"
             // type="submit"
             onClick={() => {

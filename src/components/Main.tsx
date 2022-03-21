@@ -6,12 +6,12 @@ import Settings from '../pages/Settings';
 // import UserProfileMappings from '../pages/ProfileMappings';
 import {
   ProfileMappings,
-  useProfileSourceLabel,
+  // useProfileSourceLabel,
 } from '../pages/ProfileMappings4';
 import InitialNodes from '../pages/InitialNodes';
-import AppHeader from './AppHeader';
+// import AppHeader from './AppHeader';
 import mappingOfUser from '../pages/MappingOfUser';
-import ProfileSources from '../pages/ProfileSources';
+// import ProfileSources from '../pages/ProfileSources';
 // import AppUsers from '../pages/OktaUsersData';
 // import useMappingData from '../pages/MappingData';
 

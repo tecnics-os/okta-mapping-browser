@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { AppBar, IconButton, Toolbar, Typography } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, alpha } from '@material-ui/core/styles';
 import { Brightness4, Brightness7, Settings } from '@material-ui/icons';
-import { Link, Redirect } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import useOktaUsers from '../pages/OktaUsersData';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
-import { useHistory } from 'react-router-dom';
 import { SpinningCircles } from 'react-loading-icons';
-import ProfileSources from '../pages/ProfileSources';
-import { request } from '../Request';
-import { CSVLink, CSVDownload } from 'react-csv';
-import GetAppIcon from '@material-ui/icons/GetApp';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import useOktaUsers from '../pages/OktaUsersData';
+// import ProfileSources from '../pages/ProfileSources';
+// import { request } from '../Request';
+// import { CSVLink, CSVDownload } from 'react-csv';
+// import GetAppIcon from '@material-ui/icons/GetApp';
 // import { useMappingData } from '../pages/MappingOfUser';
 
 interface AppHeaderProps {
@@ -22,7 +21,15 @@ interface AppHeaderProps {
   handleThemeChange: any;
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
+  search: {
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.common.white, 0.25),
+    },
+    width: 320,
+  },
   root: {
     flexGrow: 1,
   },
@@ -125,7 +132,7 @@ const AppHeader = (props: AppHeaderProps) => {
                     {part.text}
                   </span>
                 ))}
-                <br></br>
+                <br />
                 <span style={{ fontWeight: 'lighter' }}>
                   {user.profile.email}
                 </span>
@@ -142,17 +149,9 @@ const AppHeader = (props: AppHeaderProps) => {
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Search User"
-              style={{
-                width: 320,
-                height: 55,
-                backgroundColor: props.appTheme ? '#696969' : '#0693e3',
-                borderRadius: '3px',
-                border: 'red',
-                // borderColor: props.appTheme ? '#696969' : 'lightBlue',
-              }}
-              // color={props.appTheme ? 'blue' : 'green'}
               margin="normal"
+              label="Search User"
+              className={classes.search}
               variant="outlined"
               InputProps={{
                 ...params.InputProps,
@@ -181,7 +180,7 @@ const AppHeader = (props: AppHeaderProps) => {
         </IconButton>
         {/* <button onClick={() => history.goBack()}> */}
         <IconButton>
-          <ArrowBackIcon onClick={() => history.goBack()}></ArrowBackIcon>
+          <ArrowBackIcon onClick={() => history.goBack()} />
         </IconButton>
         {/* </button> */}
         {/* <IconButton>
