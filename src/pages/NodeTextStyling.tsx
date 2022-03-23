@@ -14,6 +14,7 @@ const displayTextInsideTheNode = (label, imageSource) => {
           position: 'absolute',
           right: '1px',
           top: '1px',
+          background: 'white',
         }}
         className="appLogo"
         height="13px"

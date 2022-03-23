@@ -13,7 +13,6 @@ const useOktaUsers = () => {
     sendUrl(`/api/v1/users`)
       .then((response) => {
         const usersList = response!.data;
-        // console.log(response!.data);
         setListOfUsers(usersList);
         setUsersLoaded(true);
       })
@@ -23,7 +22,6 @@ const useOktaUsers = () => {
   };
 
   useEffect(() => {
-    // console.log('usersList', usersLoaded);
     getUsersList();
   }, []);
 

@@ -23,8 +23,8 @@ const sendUrl = (url: string) => {
 
 const customNodeStyles: any = {
   overflow: 'hidden',
-  width: '2000px',
-  height: '650px',
+  width: '1350px',
+  height: '680px',
 };
 
 const oktaColour = '#009CDD';
@@ -350,7 +350,7 @@ const mappingOfUser = () => {
       let initialPosition = 0;
       // console.log(data);
       let tempNodes: any = [];
-      let yCoordinateOfElement = initialPosition - 20;
+      let yCoordinateOfElement = initialPosition;
       let mappingData = { ...upstreamMappingData };
       // console.log(mappingData);
       // console.log(listOfUsersFromPs);
@@ -802,26 +802,34 @@ const mappingOfUser = () => {
           defaultZoom={0.8}
         ></ReactFlow>
       ) : (
-        <Circles
-          width={'50px'}
-          height={'50px'}
-          fill="dodgerBlue"
-          strokeOpacity={0.125}
-          speed={2}
-        />
+        // <Circles
+        //   width={'50px'}
+        //   height={'50px'}
+        //   fill="dodgerBlue"
+        //   strokeOpacity={0.125}
+        //   speed={2}
+        // />
+        <div
+          style={{
+            position: 'absolute',
+            top: '45%',
+            left: '650px',
+            width: '60%',
+          }}
+        >
+          {
+            <Circles
+              width={'60px'}
+              height={'60px'}
+              fill="dodgerBlue"
+              // strokeOpacity={0.125}
+              speed={2}
+            />
+          }
+        </div>
       )}
     </div>
   );
 };
-
-{
-  /* <Circles
-            width={'30px'}
-            height={'30px'}
-            stroke="#98ff98"
-            strokeOpacity={0.125}
-            speed={2}
-          /> */
-}
 
 export default mappingOfUser;

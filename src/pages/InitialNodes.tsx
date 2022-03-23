@@ -20,8 +20,6 @@ const sendUrl = (url: string) => {
 const defalutBackgroundColour = 'white';
 
 const InitialNodes = () => {
-  // const adLabel = 'Profile Master';
-  // const initialElements = initialElement(adLogo, adLabel, 300);
   const [userProfileTemplateId, setUserProfileTemplateId] = useState('');
 
   const [
@@ -34,7 +32,6 @@ const InitialNodes = () => {
     sendUrl(`/api/v1/user/types`).then((response) => {
       const defaultId = response!.data[1].id;
       setUserProfileTemplateId(defaultId);
-      // setLoadedData(true);
     });
   };
 
@@ -47,24 +44,18 @@ const InitialNodes = () => {
     logo: string,
     nodeId: string
   ) => {
-    // console.log(id1, id2, label, logo, 'redirect');
     const logoUrl = encodeURIComponent(logo);
     history.push(`/mappings/${id1}/${id2}/${label}/${logoUrl}/${nodeId}`);
   };
 
   const onElementClick = (event: any, element: any) => {
-    // console.log('event', event.srcElement.innerText);
-    // console.log('element', element.id);
     let appName = event.srcElement.innerText;
     getAppData(appName, element.id);
   };
 
   const getAppData = (appName, nodeId) => {
-    // console.log(userProfileTemplateId);
-    // console.log(listOfProfileSources);
     [...listOfProfileSources].map((item) => {
       if (item._embedded.app.label === appName) {
-        // console.log('found!', item._embedded.app.label);
         redirect(
           userProfileTemplateId,
           item._embedded.app.id,

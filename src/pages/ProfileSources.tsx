@@ -28,33 +28,13 @@ const ProfileSources = (initialPosition, profileSourceNumber) => {
     false
   );
 
-  // const getProfileSources = () => {
-  //   sendUrl(
-  //     `/api/v1/apps/user/types?expand=app%2CappLogo&category=directory`
-  //   ).then((response) => {
-  //     console.log(response!.data);
-  //     let profileSourceData = response!.data;
-  //     // setListOfProfileSources(profileSourceData);
-  //     setListOfProfileSources(getUniqueListBy(profileSourceData, 'id'));
-  //     //       console.log(listOfProfileSources);
-  //     setLoadedProfileSources(true);
-  //   });
-  // };
-
   const getProfileSources = () => {
     sendUrl(`/api/v1/apps/user/types?expand=app%2CappLogo&category=directory`)
       .then((response) => {
-        // console.log(response!.data);
         let profileSourceData = response!.data;
-        // setListOfProfileSources(profileSourceData);
-        // console.log(getUniqueListBy(profileSourceData, 'id'));
         return getUniqueListBy(profileSourceData, 'id');
-        // setListOfProfileSources();
-        //       console.log(listOfProfileSources);
-        // setLoadedProfileSources(true);
       })
       .then((uniqueList) => {
-        // console.log(uniqueList);
         setListOfProfileSources(uniqueList);
       })
       .then(() => {
@@ -109,15 +89,7 @@ const ProfileSources = (initialPosition, profileSourceNumber) => {
 
   useEffect(() => {}, [loadedProfileSources]);
 
-  // useEffect(() => {}, [profileSources]);
-  // console.log(profileSources);
-
-  // useEffect(() => {}, [nodeId]);
-
-  // useEffect(() => {}, [loadedProfileSources]);
-  // if (loadedProfileSources) {
   return [profileSources, loadedProfileSources, listOfProfileSources];
-  // }
 };
 
 export default ProfileSources;

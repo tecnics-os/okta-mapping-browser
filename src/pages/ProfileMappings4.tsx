@@ -12,8 +12,8 @@ import { Circles } from 'react-loading-icons';
 
 const customNodeStyles: any = {
   overflow: 'hidden',
-  width: '2000px',
-  height: '650px',
+  width: '1350px',
+  height: '680px',
 };
 
 let profileSourceLabel;
@@ -635,7 +635,7 @@ const ProfileMappings = () => {
   const buttonStyling: any = () => {
     const buttonStyle = {
       position: 'relative',
-      left: '560px',
+      left: '300px',
       backgroundColor: '#0A66C2',
       color: '#ffffff',
       border: 0,
@@ -666,20 +666,41 @@ const ProfileMappings = () => {
         filename={`${profileSourceName}_mapping.csv`}
       >
         <div>
-          <button disabled={disabled} style={buttonStyling()}>
+          <button
+            disabled={disabled}
+            style={{
+              position: 'absolute',
+              left: '680px',
+              backgroundColor: '#0A66C2',
+              color: '#ffffff',
+              border: 0,
+              borderRadius: '100px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              justifyContent: 'center',
+              lineHeight: '20px',
+              maxWidth: '480px',
+              minHeight: '40px',
+              minWidth: '0px',
+              overflow: 'hidden',
+              padding: '0px',
+              paddingLeft: '20px',
+              paddingRight: '20px',
+              textAlign: 'center',
+              touchAction: 'manipulation',
+              verticalAlign: 'middle',
+            }}
+          >
             Download All Apps Mapping Data
           </button>
         </div>
       </CSVLink>
-      <div
+      {/* <div
         style={{
-          // width: '100px',
-          // height: '100px',
-          textAlign: 'center',
           position: 'absolute',
-          justifyContent: 'center',
-          margin: 'auto',
-          right: '535px',
+          top: '45%',
+          left: '650px',
+          width: '60%',
         }}
       >
         {disabled && (
@@ -691,17 +712,20 @@ const ProfileMappings = () => {
             speed={2}
           />
         )}
-      </div>
+      </div> */}
 
       <div
         style={{
-          width: '800px',
+          textAlign: 'center',
           position: 'absolute',
-          margin: '0',
-          right: '535px',
+          justifyContent: 'center',
+          margin: 'auto',
+          right: '360px',
+          // width: '60%',
+          // height: '40px',
         }}
       >
-        {screenDisabled && (
+        {disabled && (
           <Circles
             width={'30px'}
             height={'30px'}
@@ -718,7 +742,7 @@ const ProfileMappings = () => {
         filename={`${profileSourceName} to ${appName} mapping.csv`}
       >
         <div>
-          <button style={{ position: 'relative' }}>
+          <button style={buttonStyling()}>
             Download Selected App Mapping Data
           </button>
         </div>
@@ -729,7 +753,26 @@ const ProfileMappings = () => {
           elements={[...attributeMapping, ...appMapping, ...profileSources]}
           onElementClick={onElementClick}
           defaultZoom={0.8}
-        ></ReactFlow>
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: '45%',
+              left: '650px',
+              width: '60%',
+            }}
+          >
+            {screenDisabled && (
+              <Circles
+                width={'40px'}
+                height={'40px'}
+                fill="dodgerBlue"
+                // strokeOpacity={0.125}
+                speed={2}
+              />
+            )}
+          </div>
+        </ReactFlow>
       )}
     </div>
   );
